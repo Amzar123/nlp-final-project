@@ -1,0 +1,206 @@
+[
+  {
+    "claim": "South Island is referred to as the \"mainland\" by South Island residents.",
+    "fever_label": "SUPPORTS",
+    "evidence": [
+      {
+        "page_id": "South_Island",
+        "line_id": 5,
+        "title": "South Island",
+        "text": "It has a 32 percent larger landmass than the North Island so is sometimes referred to as the \" mainland \" of New Zealand , especially by South Island residents , but only 23 percent of New Zealand 's million inhabitants live there .",
+        "doc_score": 89.60964965820312,
+        "retrieval_score": 0.7125182747840881,
+        "rerank_score": 8.885557174682617
+      },
+      {
+        "page_id": "South_Island_-LRB-South_Australia-RRB-",
+        "line_id": 0,
+        "title": "South Island (South Australia)",
+        "text": "South Island (also called Peter Island , South Islet and West Bay Island) is an island located in the Australian state of South Australia at the south end of Pondalowie Bay on the south-west extremity of Yorke Peninsula about 11 km north-west by west of the town of Stenhouse Bay .",
+        "doc_score": 73.7822036743164,
+        "retrieval_score": 0.7700836658477783,
+        "rerank_score": 5.174346923828125
+      },
+      {
+        "page_id": "South_Island_-LRB-disambiguation-RRB-",
+        "line_id": 3,
+        "title": "South Island (disambiguation)",
+        "text": "South Island may also refer to :",
+        "doc_score": 71.48770141601562,
+        "retrieval_score": 0.8765014410018921,
+        "rerank_score": 4.511556625366211
+      },
+      {
+        "page_id": "South_Island",
+        "line_id": 0,
+        "title": "South Island",
+        "text": "The South Island or Te Waipounamu (Māori) is the larger of the two major islands of New Zealand , the other being the smaller but more populous North Island .",
+        "doc_score": 89.60964965820312,
+        "retrieval_score": 0.6423802375793457,
+        "rerank_score": 4.50129508972168
+      },
+      {
+        "page_id": "South_Island_-LRB-disambiguation-RRB-",
+        "line_id": 0,
+        "title": "South Island (disambiguation)",
+        "text": "The South Island is the southern of the two main islands of New Zealand .",
+        "doc_score": 71.48770141601562,
+        "retrieval_score": 0.7477782964706421,
+        "rerank_score": 4.316061973571777
+      }
+    ]
+  },
+  {
+    "claim": "John Deighton had no choice but to pursue other lines of work.",
+    "fever_label": "SUPPORTS",
+    "evidence": [
+      {
+        "page_id": "John_Deighton",
+        "line_id": 24,
+        "title": "John Deighton",
+        "text": "By 1864 , Deighton was forced to pursue other lines of work as he developed health problems (swelling of the legs and feet) .",
+        "doc_score": 52.25886535644531,
+        "retrieval_score": 0.6002776622772217,
+        "rerank_score": 7.108782768249512
+      },
+      {
+        "page_id": "John_Deighton",
+        "line_id": 18,
+        "title": "John Deighton",
+        "text": "He found no gold , though others did .",
+        "doc_score": 52.25886535644531,
+        "retrieval_score": 0.6157599091529846,
+        "rerank_score": 0.7844704389572144
+      },
+      {
+        "page_id": "John_Deighton",
+        "line_id": 0,
+        "title": "John Deighton",
+        "text": "John Deighton (November 1830 -- May 23 , 1875) , generally known as \" Gassy Jack \" , was a Canadian bar owner who was born in Hull , England .",
+        "doc_score": 52.25886535644531,
+        "retrieval_score": 0.42460256814956665,
+        "rerank_score": 0.5242680311203003
+      },
+      {
+        "page_id": "John_Deighton",
+        "line_id": 37,
+        "title": "John Deighton",
+        "text": "His patrons were mainly sailors and workers from the nearby sawmill .",
+        "doc_score": 52.25886535644531,
+        "retrieval_score": 0.4335889518260956,
+        "rerank_score": 0.3297955095767975
+      },
+      {
+        "page_id": "John_Deighton",
+        "line_id": 9,
+        "title": "John Deighton",
+        "text": "Deighton signed up to work a new clipper Invincible that could sail 400 miles a day and made the trip in only 115 days .",
+        "doc_score": 52.25886535644531,
+        "retrieval_score": 0.4423522651195526,
+        "rerank_score": 0.26304471492767334
+      }
+    ]
+  },
+  {
+    "claim": "The principal photography of The Disaster Artist (film) started on the 9th.",
+    "fever_label": "REFUTES",
+    "evidence": [
+      {
+        "page_id": "The_Disaster_Artist_-LRB-film-RRB-",
+        "line_id": 5,
+        "title": "The Disaster Artist (film)",
+        "text": "Principal photography of the film began on December 8 , 2015 .",
+        "doc_score": 55.47168731689453,
+        "retrieval_score": 0.8714069128036499,
+        "rerank_score": 7.652510166168213
+      },
+      {
+        "page_id": "The_Disaster_Artist_-LRB-film-RRB-",
+        "line_id": 6,
+        "title": "The Disaster Artist (film)",
+        "text": "It had its world premiere at South by Southwest on March 12 , 2017 .",
+        "doc_score": 55.47168731689453,
+        "retrieval_score": 0.663672924041748,
+        "rerank_score": 0.9255403280258179
+      },
+      {
+        "page_id": "The_Disaster_Artist_-LRB-film-RRB-",
+        "line_id": 0,
+        "title": "The Disaster Artist (film)",
+        "text": "The Disaster Artist is a 2017 American biographical comedy film directed , produced by , and starring James Franco .",
+        "doc_score": 55.47168731689453,
+        "retrieval_score": 0.5608557462692261,
+        "rerank_score": 0.8681831955909729
+      },
+      {
+        "page_id": "The_Disaster_Artist",
+        "line_id": 3,
+        "title": "The Disaster Artist",
+        "text": "A film adaptation of the same name developed by Seth Rogen with James Franco directing , producing and starring as Tommy Wiseau along with Dave Franco as Greg Sestero premiered at South by Southwest on March 12 , 2017 to a standing ovation .",
+        "doc_score": 45.72153854370117,
+        "retrieval_score": 0.5572086572647095,
+        "rerank_score": 0.20464244484901428
+      },
+      {
+        "page_id": "The_Disaster_Artist_-LRB-film-RRB-",
+        "line_id": 1,
+        "title": "The Disaster Artist (film)",
+        "text": "Based on Greg Sestero 's non-fiction book of the same name , the film chronicles the making of the 2003 cult film The Room .",
+        "doc_score": 55.47168731689453,
+        "retrieval_score": 0.5576011538505554,
+        "rerank_score": 0.15642942488193512
+      }
+    ]
+  },
+  {
+    "claim": "Moves Like Jagger is on Overexposed.",
+    "fever_label": "REFUTES",
+    "evidence": [
+      {
+        "page_id": "Overexposed_-LRB-album-RRB-",
+        "line_id": 8,
+        "title": "Overexposed (album)",
+        "text": "Its title is a smirking allusion to Levine 's ubiquity , while its sound is a reflection of how the group wishes to retain the large audience they won once again with \" Moves Like Jagger \" .",
+        "doc_score": 41.78379821777344,
+        "retrieval_score": 0.578029990196228,
+        "rerank_score": 7.405905246734619
+      },
+      {
+        "page_id": "Overexposed_-LRB-album-RRB-",
+        "line_id": 1,
+        "title": "Overexposed (album)",
+        "text": "The album was recorded between 2011 and 2012 and was driven after the moderate success of their third album , Hands All Over (2010) , and later by the enormous success of the re-released edition , which was promoted by the single \" Moves Like Jagger \" , recorded as a collaboration with Christina Aguilera .",
+        "doc_score": 41.78379821777344,
+        "retrieval_score": 0.49644535779953003,
+        "rerank_score": 7.3368754386901855
+      },
+      {
+        "page_id": "Moves_like_Jagger",
+        "line_id": 0,
+        "title": "Moves like Jagger",
+        "text": "\" Moves Like Jagger \" is a song by American band Maroon 5 featuring recording artist Christina Aguilera , released by A&M Octone Records on June 21 , 2011 , as the fourth and final single from the re-release of the group 's third studio album Hands All Over (2010) .",
+        "doc_score": 73.24650573730469,
+        "retrieval_score": 0.537102460861206,
+        "rerank_score": 4.488593101501465
+      },
+      {
+        "page_id": "Moves_like_Jagger",
+        "line_id": 2,
+        "title": "Moves like Jagger",
+        "text": "\" Moves Like Jagger \" is a dance-pop and electropop song and is backed by synths and electronic drums .",
+        "doc_score": 73.24650573730469,
+        "retrieval_score": 0.6567808389663696,
+        "rerank_score": 4.0458784103393555
+      },
+      {
+        "page_id": "Moves_like_Jagger",
+        "line_id": 8,
+        "title": "Moves like Jagger",
+        "text": "Likewise , the song was a commercial success , going on to top the charts in over 18 countries .",
+        "doc_score": 73.24650573730469,
+        "retrieval_score": 0.5246438980102539,
+        "rerank_score": 3.675992727279663
+      }
+    ]
+  }
+]
