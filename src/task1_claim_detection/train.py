@@ -166,6 +166,10 @@ def main():
     model = AutoModelForSequenceClassification.from_pretrained(
         args.model, num_labels=2, id2label=ID2LABEL, label2id={v: k for k, v in ID2LABEL.items()}
     )
+    # Some checkpoints (e.g. microsoft/deberta-v3-small) are stored in fp16 and recent transformers
+    # versions load them as fp16. fp16 mixed-precision training needs fp32 weights, otherwise the
+    # grad scaler fails with "Attempting to unscale FP16 gradients".
+    model = model.float()
 
     splits = {name: load_split(name, args.label_col, args.limit, args.seed) for name in ("train", "val", "test")}
     datasets = {

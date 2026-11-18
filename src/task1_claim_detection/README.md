@@ -60,7 +60,7 @@ python -m src.task1_claim_detection.domain_gap
 1. `bash notebooks/make_task1_bundle.sh` → `outputs/task1_colab.zip` (code + Task 1 data, ~1.4 MB)
 2. Upload it to Google Drive in `MyDrive/nlp-final-project/`
 3. Open `notebooks/task1_colab.ipynb` in Colab, choose a T4 GPU, then Run all
-4. Download `task1_models.zip` from the same Drive folder and unzip it in the project root
+4. Download each `task1_<model>_<mapping>.zip` from the same Drive folder (one per run) and unzip them in the project root
 
 Trained models are **not in git** (about 500 MB each). Share them through Drive or the Hugging Face Hub.
 
