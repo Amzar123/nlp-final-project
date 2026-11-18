@@ -89,17 +89,59 @@ The threshold is tuned on the validation set during training and saved in
 Output per run, in `models/task1_<model>_<label-col>/`: `model/` (weights, tokenizer,
 `threshold.json`), `metrics.json`, `test_predictions.csv`.
 
-## Results (test = groundtruth.csv)
+## Results
 
-| Model | Mapping | Macro F1 | Precision | Recall | ROC-AUC |
-|---|---|---|---|---|---|
-| TF-IDF + LogReg | factual (main) | 0.921 | 0.898 | 0.877 | 0.976 |
-| TF-IDF + LogReg | check-worthy | 0.908 | 0.829 | 0.895 | 0.977 |
-| roberta-base | factual (main) | _pending_ | | | |
-| roberta-base | check-worthy | _pending_ | | | |
+### Classification (test = groundtruth.csv, at the threshold tuned on validation)
 
-Validation scores are much lower than test (TF-IDF macro F1 about 0.81 vs 0.92). Validation uses
-noisy crowd labels, while test uses expert labels.
+| Model | Mapping | Val macro F1 | Test macro F1 | Precision | Recall | ROC-AUC | Threshold |
+|---|---|---|---|---|---|---|---|
+| TF-IDF + LogReg | factual | 0.813 | 0.921 | 0.898 | 0.877 | 0.976 | 0.59 |
+| TF-IDF + LogReg | check-worthy | 0.795 | 0.908 | 0.829 | 0.895 | 0.977 | 0.54 |
+| **roberta-base** | **factual (main model)** | **0.882** | **0.976** | 0.958 | 0.973 | 0.998 | 0.60 |
+| roberta-base | check-worthy | 0.863 | 0.969 | 0.939 | 0.966 | 0.997 | 0.53 |
+| deberta-v3-small | factual | 0.869 | 0.979 | 0.970 | 0.970 | 0.997 | 0.58 |
+
+- **Main model: `roberta-base`, factual mapping.** It has the best validation macro F1. Deberta-v3-small
+  scores slightly higher on test (0.979 vs 0.976), but the model is chosen on validation, never on test.
+- Transformers beat the TF-IDF baseline by about 5.5 macro F1 points.
+- Validation is much lower than test for every model. Validation uses noisy crowd labels, while test
+  uses expert labels.
+- Leakage check: only 14 test sentences have a near-duplicate (TF-IDF cosine ≥ 0.8) in train/val.
+  Removing them leaves the roberta score unchanged (0.9755 → 0.9753). All test sentences come from
+  debates that also appear in training, so the split doesn't measure generalization to unseen debates.
+
+### Domain gap (plan 1.5): FEVER `paper_dev` claims predicted as claim
+
+All 9,999 FEVER claims are factual statements, so ideally all of them should pass.
+
+| Model | Pass rate | SUPPORTS | REFUTES | NOT ENOUGH INFO |
+|---|---|---|---|---|
+| **roberta-base, factual** | **0.945** | 0.949 | 0.929 | 0.957 |
+| deberta-v3-small, factual | 0.945 | 0.947 | 0.932 | 0.955 |
+| roberta-base, check-worthy | **0.172** | 0.126 | 0.218 | 0.173 |
+
+- With the main model, Task 1 caps end-to-end recall at about **94.5%**. The claims it drops are short,
+  odd ones that barely look like statements, mostly generated variants (*"Wish Upon starred tomato."*,
+  *"Morse Code is communication."*).
+- **The check-worthy mapping drops 83% of FEVER claims** while scoring almost as well on its own test set.
+  Encyclopedic facts are not "check-worthy" in the political sense, which supports the factual mapping
+  for this pipeline.
+- spaCy keeps 9,967 of 9,999 claims as a single sentence.
+
+Full report: `models/task1_roberta-base_label/domain_gap_paper_dev.json`.
+
+### Example (`infer.py --all`)
+
+```
+[  -  ] 0.003  Good evening everyone, and thank you for having me.
+[  -  ] 0.002  I honestly think this city deserves better.
+[CLAIM] 0.999  Nikolaj Coster-Waldau worked with the Fox Broadcasting Company.
+[  -  ] 0.001  Can you believe that?
+[CLAIM] 0.998  The Eiffel Tower is located in Berlin.      <- false, but still a claim (Task 3 judges truth)
+[  -  ] 0.001  We must work together to build a brighter future.
+[CLAIM] 0.999  Unemployment fell to 4.9 percent in 2016.
+[CLAIM] 0.999  He won the award in 2010.                  <- passes, but unverifiable (pronoun)
+```
 
 ## Known limitations
 
