@@ -3,3 +3,8 @@ scikit-learn
 torch
 sentence-transformers>=3.0
 tqdm
+transformers
+accelerate
+pandas
+pyarrow
+spacy
