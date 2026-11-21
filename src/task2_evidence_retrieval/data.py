@@ -5,10 +5,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-PROJECT_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = PROJECT_DIR / "data"
-RAW_DIR = DATA_DIR / "raw"
-PROCESSED_DIR = DATA_DIR / "processed"
+from ..paths import DATA_DIR, PROCESSED_DIR, PROJECT_DIR, RAW_DIR  # noqa: F401  (re-exported)
 
 FEVER_BASE_URL = "https://fever.ai/download/fever"
 

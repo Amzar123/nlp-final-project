@@ -5,7 +5,8 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from .data import PROCESSED_DIR, PROJECT_DIR, read_claims_cache
+from ..paths import OUTPUTS_DIR, PROCESSED_DIR
+from .data import read_claims_cache
 from .reranker import CrossEncoderReranker
 from .retriever import EvidenceRetriever, load_corpus
 
@@ -99,7 +100,7 @@ def main():
     parser.add_argument("--n-candidates", type=int, default=30)
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--no-rerank", action="store_true")
-    parser.add_argument("--out-dir", default=str(PROJECT_DIR / "outputs"))
+    parser.add_argument("--out-dir", default=str(OUTPUTS_DIR / "task2"))
     args = parser.parse_args()
 
     claims = read_claims_cache(args.claims)

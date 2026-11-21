@@ -61,20 +61,20 @@ pip install -r requirements.txt
 
 # 1. bikin subset corpus, cukup sekali
 #    (download wiki-pages.zip ~20 menit tergantung internet, scan-nya sendiri ~1-2 menit)
-python -m evidence_retrieval.build_corpus --n-claims 500 --n-random 20000
+python -m src.task2_evidence_retrieval.build_corpus --n-claims 500 --n-random 20000
 
 # 2. evaluasi
-python -m evidence_retrieval.evaluate --limit 50   # tes cepat
-python -m evidence_retrieval.evaluate              # semua 500 claim
+python -m src.task2_evidence_retrieval.evaluate --limit 50   # tes cepat
+python -m src.task2_evidence_retrieval.evaluate              # semua 500 claim
 
 # 3. coba claim sendiri
-python -m evidence_retrieval.pipeline "The principal photography of The Disaster Artist (film) started on the 9th."
+python -m src.task2_evidence_retrieval.pipeline "The principal photography of The Disaster Artist (film) started on the 9th."
 ```
 
 ## Pemakaian di kode (untuk integrasi)
 
 ```python
-from evidence_retrieval.pipeline import EvidencePipeline
+from src.task2_evidence_retrieval.pipeline import EvidencePipeline
 
 pipe = EvidencePipeline.from_corpus_file()   # default: data/processed/wiki_subset.jsonl
 evidence = pipe.run("The principal photography of The Disaster Artist (film) started on the 9th.", top_k=5)
@@ -101,9 +101,9 @@ Retriever tidak terikat ke FEVER. Corpus lain bisa dipakai asalkan formatnya
 list of dict `{"id", "title", "sentences": [[line_id, text], ...]}`:
 
 ```python
-from evidence_retrieval.retriever import EvidenceRetriever
-from evidence_retrieval.reranker import CrossEncoderReranker
-from evidence_retrieval.pipeline import EvidencePipeline
+from src.task2_evidence_retrieval.retriever import EvidenceRetriever
+from src.task2_evidence_retrieval.reranker import CrossEncoderReranker
+from src.task2_evidence_retrieval.pipeline import EvidencePipeline
 
 pipe = EvidencePipeline(EvidenceRetriever(my_pages), CrossEncoderReranker())
 ```

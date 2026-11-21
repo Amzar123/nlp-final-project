@@ -18,8 +18,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-PROJECT_DIR = Path(__file__).resolve().parents[2]
-RAW_DIR = PROJECT_DIR / "data" / "raw"
+from src.paths import RAW_DIR
 
 FEVER_MIRRORS = [
     "https://fever.ai/download/fever",

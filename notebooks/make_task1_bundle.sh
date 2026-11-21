@@ -7,6 +7,7 @@ mkdir -p outputs
 rm -f outputs/task1_colab.zip
 zip -q outputs/task1_colab.zip \
     src/__init__.py \
+    src/paths.py \
     src/task1_claim_detection/*.py \
     data/processed/task1_train.parquet \
     data/processed/task1_val.parquet \

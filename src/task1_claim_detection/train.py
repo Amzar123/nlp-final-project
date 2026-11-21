@@ -40,9 +40,7 @@ from transformers import (
     set_seed,
 )
 
-PROJECT_DIR = Path(__file__).resolve().parents[2]
-PROCESSED_DIR = PROJECT_DIR / "data" / "processed"
-MODELS_DIR = PROJECT_DIR / "models"
+from ..paths import MODELS_DIR, PROCESSED_DIR
 ID2LABEL = {0: "non_factual", 1: "claim"}
 
 

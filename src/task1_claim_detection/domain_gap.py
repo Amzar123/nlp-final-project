@@ -17,9 +17,9 @@ from pathlib import Path
 
 import numpy as np
 
-from .infer import DEFAULT_MODEL_DIR, PROJECT_DIR, ClaimDetector
+from ..paths import RAW_DIR
+from .infer import DEFAULT_MODEL_DIR, ClaimDetector
 
-RAW_DIR = PROJECT_DIR / "data" / "raw"
 
 
 def main():
