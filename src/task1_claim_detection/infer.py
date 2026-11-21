@@ -21,8 +21,9 @@ import numpy as np
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-PROJECT_DIR = Path(__file__).resolve().parents[2]
-DEFAULT_MODEL_DIR = PROJECT_DIR / "models" / "task1_roberta-base_label" / "model"
+from ..paths import MODELS_DIR
+
+DEFAULT_MODEL_DIR = MODELS_DIR / "task1_roberta-base_label" / "model"
 SPACY_EXCLUDE = ["ner", "lemmatizer", "attribute_ruler", "tagger"]
 
 

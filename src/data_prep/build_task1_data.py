@@ -18,9 +18,9 @@ import json
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from src.data_prep.download import CLAIMBUSTER_DIR, RAW_DIR
+from src.data_prep.download import CLAIMBUSTER_DIR
+from src.paths import PROCESSED_DIR, RAW_DIR
 
-PROCESSED_DIR = RAW_DIR.parent / "processed"
 LABEL_COLUMNS = ("label", "label_checkworthy")
 KEEP_COLUMNS = ["sentence_id", "text", "verdict", "label", "label_checkworthy", "speaker", "file_id"]
 
