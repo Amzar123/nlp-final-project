@@ -69,6 +69,9 @@ class WeightedTrainer(Trainer):
         loss = F.cross_entropy(outputs.logits, labels, weight=self.class_weights.to(outputs.logits.device))
         return (loss, outputs) if return_outputs else loss
 
+    def predict_probs(self, dataset):
+        return ClaimMetrics.softmax_pos(self.predict(dataset).predictions)
+
 
 class SaveBestModel(TrainerCallback):
     """Overwrite <save_dir> with the model whenever the validation metric improves.
@@ -91,44 +94,47 @@ class SaveBestModel(TrainerCallback):
             model.save_pretrained(self.save_dir)
 
 
-def softmax_pos(logits):
-    return torch.softmax(torch.as_tensor(logits, dtype=torch.float32), dim=-1)[:, 1].numpy()
+class ClaimMetrics:
+    """Binary metrics on P(claim), shared by train.py and baseline.py."""
+
+    @staticmethod
+    def softmax_pos(logits):
+        return torch.softmax(torch.as_tensor(logits, dtype=torch.float32), dim=-1)[:, 1].numpy()
+
+    @staticmethod
+    def binary(labels, probs, threshold=0.5):
+        preds = (probs >= threshold).astype(int)
+        return {
+            "macro_f1": f1_score(labels, preds, average="macro"),
+            "precision": precision_score(labels, preds, zero_division=0),
+            "recall": recall_score(labels, preds, zero_division=0),
+            "f1": f1_score(labels, preds, zero_division=0),
+            "accuracy": accuracy_score(labels, preds),
+            "roc_auc": roc_auc_score(labels, probs) if len(set(labels)) > 1 else float("nan"),
+            "threshold": float(threshold),
+        }
+
+    @classmethod
+    def for_trainer(cls, eval_pred):
+        """`compute_metrics` hook for the HF Trainer."""
+        logits, labels = eval_pred
+        return cls.binary(np.asarray(labels), cls.softmax_pos(logits))
+
+    @staticmethod
+    def tune_threshold(labels, probs):
+        """Threshold on P(claim) that maximizes macro F1 on the given (validation) data."""
+        grid = np.round(np.arange(0.05, 0.951, 0.01), 2)
+        scores = [f1_score(labels, (probs >= t).astype(int), average="macro") for t in grid]
+        return float(grid[int(np.argmax(scores))])
 
 
-def binary_metrics(labels, probs, threshold=0.5):
-    preds = (probs >= threshold).astype(int)
-    return {
-        "macro_f1": f1_score(labels, preds, average="macro"),
-        "precision": precision_score(labels, preds, zero_division=0),
-        "recall": recall_score(labels, preds, zero_division=0),
-        "f1": f1_score(labels, preds, zero_division=0),
-        "accuracy": accuracy_score(labels, preds),
-        "roc_auc": roc_auc_score(labels, probs) if len(set(labels)) > 1 else float("nan"),
-        "threshold": float(threshold),
-    }
-
-
-def compute_metrics(eval_pred):
-    logits, labels = eval_pred
-    return binary_metrics(np.asarray(labels), softmax_pos(logits))
-
-
-def tune_threshold(labels, probs):
-    """Threshold on P(claim) that maximizes macro F1 on the given (validation) data."""
-    grid = np.round(np.arange(0.05, 0.951, 0.01), 2)
-    scores = [f1_score(labels, (probs >= t).astype(int), average="macro") for t in grid]
-    return float(grid[int(np.argmax(scores))])
-
-
-def predict_probs(trainer, dataset):
-    return softmax_pos(trainer.predict(dataset).predictions)
-
-
-def load_split(name, label_col, limit, seed):
-    df = pd.read_parquet(PROCESSED_DIR / f"task1_{name}.parquet")
-    if limit and limit < len(df):
-        df = df.sample(n=limit, random_state=seed)
-    return df.reset_index(drop=True), df[label_col].to_numpy()
+class Task1Splits:
+    @staticmethod
+    def load(name, label_col, limit, seed):
+        df = pd.read_parquet(PROCESSED_DIR / f"task1_{name}.parquet")
+        if limit and limit < len(df):
+            df = df.sample(n=limit, random_state=seed)
+        return df.reset_index(drop=True), df[label_col].to_numpy()
 
 
 def main():
@@ -169,7 +175,7 @@ def main():
     # grad scaler fails with "Attempting to unscale FP16 gradients".
     model = model.float()
 
-    splits = {name: load_split(name, args.label_col, args.limit, args.seed) for name in ("train", "val", "test")}
+    splits = {name: Task1Splits.load(name, args.label_col, args.limit, args.seed) for name in ("train", "val", "test")}
     datasets = {
         name: SentenceDataset(df["text"], labels, tokenizer, args.max_length)
         for name, (df, labels) in splits.items()
@@ -207,7 +213,7 @@ def main():
         train_dataset=datasets["train"],
         eval_dataset=datasets["val"],
         data_collator=DataCollatorWithPadding(tokenizer),
-        compute_metrics=compute_metrics,
+        compute_metrics=ClaimMetrics.for_trainer,
         callbacks=[keep_best],
         class_weights=class_weights,
     )
@@ -219,9 +225,9 @@ def main():
     del best
 
     val_labels, test_labels = splits["val"][1], splits["test"][1]
-    val_probs = predict_probs(trainer, datasets["val"])
-    test_probs = predict_probs(trainer, datasets["test"])
-    threshold = tune_threshold(val_labels, val_probs)
+    val_probs = trainer.predict_probs(datasets["val"])
+    test_probs = trainer.predict_probs(datasets["test"])
+    threshold = ClaimMetrics.tune_threshold(val_labels, val_probs)
 
     results = {
         "run": run_name,
@@ -229,10 +235,10 @@ def main():
         "class_weights": class_weights,
         "best_step": keep_best.best_step,
         "tuned_threshold": threshold,
-        "val@0.5": binary_metrics(val_labels, val_probs, 0.5),
-        "val@tuned": binary_metrics(val_labels, val_probs, threshold),
-        "test@0.5": binary_metrics(test_labels, test_probs, 0.5),
-        "test@tuned": binary_metrics(test_labels, test_probs, threshold),
+        "val@0.5": ClaimMetrics.binary(val_labels, val_probs, 0.5),
+        "val@tuned": ClaimMetrics.binary(val_labels, val_probs, threshold),
+        "test@0.5": ClaimMetrics.binary(test_labels, test_probs, 0.5),
+        "test@tuned": ClaimMetrics.binary(test_labels, test_probs, threshold),
         "log_history": trainer.state.log_history,
     }
 

@@ -22,6 +22,41 @@ from .infer import DEFAULT_MODEL_DIR, ClaimDetector
 
 
 
+class DomainGapAnalyzer:
+    """Pass rate of real FEVER claims through the claim detector."""
+
+    def __init__(self, detector):
+        self.detector = detector
+
+    @staticmethod
+    def pass_rates(probs, labels, threshold):
+        passed = probs >= threshold
+        out = {"all": float(passed.mean())}
+        for label in sorted(set(labels)):
+            out[label] = float(passed[labels == label].mean())
+        return out
+
+    def analyze(self, claims, labels, split, n_lowest=25):
+        probs = self.detector.score(claims)
+        n_sentences = [len(self.detector.split_sentences(c)) for c in claims]
+        split_counts = Counter(min(n, 3) for n in n_sentences)
+        threshold = self.detector.threshold
+
+        order = np.argsort(probs)
+        return {
+            "split": split,
+            "n_claims": len(claims),
+            "threshold": threshold,
+            "pass_rate@tuned": self.pass_rates(probs, labels, threshold),
+            "pass_rate@0.5": self.pass_rates(probs, labels, 0.5),
+            "p_claim_mean": float(probs.mean()),
+            "p_claim_median": float(np.median(probs)),
+            "spacy_sentences_per_claim": {("3+" if k == 3 else str(k)): v for k, v in sorted(split_counts.items())},
+            "lowest_scored_claims": [{"claim": claims[i], "p_claim": float(probs[i]), "label": labels[i]}
+                                     for i in order[:n_lowest]],
+        }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--model-dir", default=str(DEFAULT_MODEL_DIR))
@@ -34,31 +69,7 @@ def main():
     labels = np.array([r["label"] for r in rows])
 
     detector = ClaimDetector(args.model_dir)
-    probs = detector.score(claims)
-
-    n_sentences = [len(detector.split_sentences(c)) for c in claims]
-    split_counts = Counter(min(n, 3) for n in n_sentences)
-
-    def pass_rates(threshold):
-        passed = probs >= threshold
-        out = {"all": float(passed.mean())}
-        for label in sorted(set(labels)):
-            out[label] = float(passed[labels == label].mean())
-        return out
-
-    order = np.argsort(probs)
-    report = {
-        "split": args.split,
-        "n_claims": len(claims),
-        "threshold": detector.threshold,
-        "pass_rate@tuned": pass_rates(detector.threshold),
-        "pass_rate@0.5": pass_rates(0.5),
-        "p_claim_mean": float(probs.mean()),
-        "p_claim_median": float(np.median(probs)),
-        "spacy_sentences_per_claim": {("3+" if k == 3 else str(k)): v for k, v in sorted(split_counts.items())},
-        "lowest_scored_claims": [{"claim": claims[i], "p_claim": float(probs[i]), "label": labels[i]}
-                                 for i in order[:25]],
-    }
+    report = DomainGapAnalyzer(detector).analyze(claims, labels, args.split)
 
     out_path = Path(args.out) if args.out else Path(args.model_dir).parent / f"domain_gap_{args.split}.json"
     out_path.write_text(json.dumps(report, indent=2))

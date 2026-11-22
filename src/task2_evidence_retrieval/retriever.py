@@ -1,7 +1,7 @@
-import json
 from dataclasses import asdict, dataclass
 
-from .bm25 import BM25, top_k_indices
+from ..utils import Device, JsonlFile
+from .bm25 import BM25
 
 
 @dataclass
@@ -22,23 +22,6 @@ class Evidence:
         return asdict(self)
 
 
-def get_device():
-    import torch
-    if torch.cuda.is_available():
-        return "cuda"
-    if torch.backends.mps.is_available():
-        return "mps"
-    return "cpu"
-
-
-def load_corpus(path):
-    pages = []
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            pages.append(json.loads(line))
-    return pages
-
-
 class EvidenceRetriever:
     def __init__(
         self,
@@ -54,9 +37,17 @@ class EvidenceRetriever:
         self.title_index = BM25().fit([p["title"] for p in pages])
         self.body_index = BM25().fit([" ".join(s[1] for s in p["sentences"]) for p in pages])
 
-        self.device = device or get_device()
+        self.device = device or Device.auto()
         self.bi_encoder_name = bi_encoder_name
-        self._encoder = None 
+        self._encoder = None
+
+    @staticmethod
+    def load_corpus(path):
+        return JsonlFile.read(path)
+
+    @classmethod
+    def from_corpus_file(cls, path, **kwargs):
+        return cls(cls.load_corpus(path), **kwargs)
 
     @property
     def encoder(self):
@@ -69,7 +60,7 @@ class EvidenceRetriever:
 
     def retrieve_documents(self, claim, k=5):
         scores = self.title_weight * self.title_index.get_scores(claim) + self.body_index.get_scores(claim)
-        return top_k_indices(scores, k)
+        return BM25.top_k(scores, k)
 
     # ---------- tahap 2: sentence retrieval ----------
 

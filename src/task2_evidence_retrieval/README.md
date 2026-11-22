@@ -15,13 +15,12 @@ claim
 
 | File | Isi |
 |---|---|
-| `data.py` | download & baca file FEVER (claim + wiki-pages.zip) |
+| `data.py` | baca file FEVER: `FeverText` (bersihkan token PTB), `FeverClaims`, `WikiDump` |
 | `build_corpus.py` | bikin subset corpus Wikipedia untuk eksperimen |
 | `bm25.py` | implementasi BM25 pakai sparse matrix |
 | `retriever.py` | tahap [1] dan [2] |
 | `reranker.py` | tahap [3] |
 | `pipeline.py` | gabungan semuanya, ini yang dipanggil saat integrasi |
-| `evaluate.py` | evaluasi di FEVER (sebelum vs sesudah rerank) |
 | `sample_output.json` | contoh output untuk mocking di modul lain |
 
 ## Dataset
@@ -64,11 +63,11 @@ pip install -r requirements.txt
 python -m src.task2_evidence_retrieval.build_corpus --n-claims 500 --n-random 20000
 
 # 2. evaluasi
-python -m src.task2_evidence_retrieval.evaluate --limit 50   # tes cepat
-python -m src.task2_evidence_retrieval.evaluate              # semua 500 claim
+python -m src.evaluate_retrieval --limit 50   # tes cepat
+python -m src.evaluate_retrieval              # semua 500 claim
 
-# 3. coba claim sendiri
-python -m src.task2_evidence_retrieval.pipeline "The principal photography of The Disaster Artist (film) started on the 9th."
+# 3. coba claim sendiri (lewat pipeline end-to-end)
+python -m src.pipeline --no-claim-detection "The principal photography of The Disaster Artist (film) started on the 9th."
 ```
 
 ## Pemakaian di kode (untuk integrasi)
