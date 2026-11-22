@@ -39,6 +39,14 @@ class ClaimDetector:
     def __init__(self, model_dir=DEFAULT_MODEL_DIR, threshold=None, device=None, batch_size=64,
                  max_length=128, spacy_model="en_core_web_sm"):
         model_dir = Path(model_dir)
+        if not (model_dir / "config.json").exists():
+            raise FileNotFoundError(
+                f"Task 1 model not found at {model_dir}.\n"
+                "Trained models are not in git. Download task1_roberta-base_label.zip (from the shared "
+                "Drive, produced by notebooks/task1_colab.ipynb) and unzip it in the project root, "
+                "or pass --claim-model-dir. To skip claim detection, run with --no-claim-detection.\n"
+                "See src/task1_claim_detection/README.md (Training on Google Colab)."
+            )
         self.device = device or get_device()
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_dir).to(self.device).eval()
