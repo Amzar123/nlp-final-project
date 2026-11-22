@@ -1,0 +1,40 @@
+{
+  "claim_detection": [
+    {"text": "Good evening everyone.", "expected": "not_claim", "category": "greeting"},
+    {"text": "Thank you so much for coming tonight.", "expected": "not_claim", "category": "greeting"},
+    {"text": "I think pizza is the best food in the world.", "expected": "not_claim", "category": "opinion"},
+    {"text": "In my opinion, this movie is overrated.", "expected": "not_claim", "category": "opinion"},
+    {"text": "What do you think about the new policy?", "expected": "not_claim", "category": "question"},
+    {"text": "Please close the door.", "expected": "not_claim", "category": "command"},
+    {"text": "I hope we win the next election.", "expected": "not_claim", "category": "hope"},
+    {"text": "We will make this country great again.", "expected": "not_claim", "category": "promise"},
+    {"text": "Wow, that was amazing!", "expected": "not_claim", "category": "exclamation"},
+    {"text": "I love you all.", "expected": "not_claim", "category": "emotion"},
+
+    {"text": "The Eiffel Tower is located in Berlin.", "expected": "claim", "category": "fact (false)"},
+    {"text": "Barack Obama was born in Hawaii in 1961.", "expected": "claim", "category": "fact"},
+    {"text": "Unemployment fell to 4 percent last year.", "expected": "claim", "category": "statistic"},
+    {"text": "Indonesia has more than 17,000 islands.", "expected": "claim", "category": "statistic"},
+    {"text": "The American Civil War began in 1861.", "expected": "claim", "category": "fact"},
+    {"text": "Firefox is a desktop-only browser.", "expected": "claim", "category": "fact (false)"}
+  ],
+
+  "verification": [
+    {"claim": "The American Civil War began in 1861.", "expected": "SUPPORTS"},
+    {"claim": "Shadowhunters premiered in 2016.", "expected": "SUPPORTS"},
+    {"claim": "Henry III of France was murdered.", "expected": "SUPPORTS"},
+    {"claim": "DJ Quik is a recording artist.", "expected": "SUPPORTS"},
+    {"claim": "South Island is referred to as the \"mainland\" by South Island residents.", "expected": "SUPPORTS"},
+
+    {"claim": "Firefox is a desktop-only browser.", "expected": "REFUTES"},
+    {"claim": "Mogadishu is a book.", "expected": "REFUTES"},
+    {"claim": "The Saw franchise is a collection of TV shows.", "expected": "REFUTES"},
+    {"claim": "Ed Decter is a Canadian.", "expected": "REFUTES"},
+    {"claim": "Easy A is written by a stork.", "expected": "REFUTES"},
+
+    {"claim": "The Eiffel Tower is located in Berlin.", "expected": "REFUTES",
+     "note": "not in the corpus sample: the Eiffel Tower page is missing, so the evidence will be unrelated"},
+    {"claim": "Barack Obama was born in Hawaii.", "expected": "SUPPORTS",
+     "note": "not in the corpus sample: evidence may be missing"}
+  ]
+}

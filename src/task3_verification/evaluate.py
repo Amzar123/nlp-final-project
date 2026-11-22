@@ -42,7 +42,6 @@ def load_eval_claims(claims_path, dev_path, n_nei, seed):
         claims += rng.sample(nei, min(n_nei, len(nei)))
     return claims
 
-
 def gold_evidence(claim, sentence_lookup):
     """First gold evidence set whose sentences are all in the corpus, as evidence dicts."""
     for ev_set in claim["evidence_sets"]:
@@ -50,7 +49,6 @@ def gold_evidence(claim, sentence_lookup):
         if all(k in sentence_lookup for k in keys):
             return [{"page_id": p, "line_id": l, **sentence_lookup[(p, l)]} for p, l in keys]
     return None
-
 
 def compute_metrics(rows, threshold):
     y_true, y_pred, fever = [], [], []
@@ -76,7 +74,6 @@ def compute_metrics(rows, threshold):
                              "matrix": confusion_matrix(y_true, y_pred, labels=list(LABELS)).tolist()},
     }
 
-
 def print_metrics(name, m):
     print(f"\n=== {name} (n={m['n']}, threshold={m['threshold']:.2f}) ===")
     print(f"  accuracy    {m['accuracy']:.4f}")
@@ -88,7 +85,6 @@ def print_metrics(name, m):
     print("  confusion (rows = gold, cols = predicted S / R / NEI):")
     for lab, row in zip(LABELS, m["confusion_matrix"]["matrix"]):
         print(f"    {lab:<16} {row}")
-
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)

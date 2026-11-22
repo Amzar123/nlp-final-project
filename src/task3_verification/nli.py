@@ -26,7 +26,6 @@ In code:
     result = verifier.verify(claim, evidence)   # evidence = EvidencePipeline.run(claim) output
 """
 import argparse
-
 import numpy as np
 
 from ..task2_evidence_retrieval.data import clean_text
@@ -34,7 +33,6 @@ from ..task2_evidence_retrieval.data import clean_text
 DEFAULT_MODEL = "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli"
 LABELS = ("SUPPORTS", "REFUTES", "NOT ENOUGH INFO")
 NLI_KEYS = ("entailment", "neutral", "contradiction")
-
 
 def get_device():
     import torch
@@ -44,7 +42,6 @@ def get_device():
         return "mps"
     return "cpu"
 
-
 def format_premise(ev):
     """Evidence dict (or plain string) -> premise text."""
     if isinstance(ev, str):
@@ -52,7 +49,6 @@ def format_premise(ev):
     text = clean_text(ev["text"])
     title = ev.get("title")
     return f"{title}: {text}" if title else text
-
 
 def aggregate(sentence_probs, concat_probs=None, threshold=0.5):
     """Turn NLI probabilities into a FEVER verdict.
@@ -74,7 +70,6 @@ def aggregate(sentence_probs, concat_probs=None, threshold=0.5):
     if max(support, refute) < threshold:
         return "NOT ENOUGH INFO", scores
     return ("SUPPORTS" if support >= refute else "REFUTES"), scores
-
 
 class NLIVerifier:
     def __init__(self, model_name=DEFAULT_MODEL, threshold=0.5, use_concat=True, device=None,
@@ -150,7 +145,6 @@ class NLIVerifier:
             "evidence": scored_evidence,
         }
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("claim")
@@ -166,7 +160,6 @@ def main():
     for ev in result["evidence"]:
         nli = ev["nli"]
         print(f"  E={nli['entailment']:.3f} N={nli['neutral']:.3f} C={nli['contradiction']:.3f}  {ev['text']}")
-
 
 if __name__ == "__main__":
     main()
