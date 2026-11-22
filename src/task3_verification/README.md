@@ -20,7 +20,7 @@ evidence  "Eiffel Tower: The Eiffel Tower is a wrought iron lattice tower ... in
 - Aggregation:
   - `support = max P(entailment)`, `refute = max P(contradiction)` over all pairs
   - `max(support, refute) < threshold` → NOT ENOUGH INFO, otherwise the larger of the two wins
-  - default threshold 0.5; `evaluate.py` tunes it on half of the eval claims
+  - default threshold 0.5; `src/evaluate.py` tunes it on half of the eval claims
 
 Note: the NLI model was trained on FEVER-NLI, which is built from the FEVER **train** split. Our
 eval claims come from `shared_task_dev`, so there is no claim overlap, but the model has seen the
@@ -32,14 +32,13 @@ All commands run from the project root. Task 2's corpus must be built first
 (`python -m src.task2_evidence_retrieval.build_corpus`, see [task2_evidence_retrieval/README.md](../task2_evidence_retrieval/README.md)).
 
 ```bash
-# one claim + your own evidence sentences
-python -m src.task3_verification.nli "The Eiffel Tower is located in Berlin." \
-    "The Eiffel Tower is a wrought iron lattice tower on the Champ de Mars in Paris , France ."
+# one claim, end-to-end (retrieval + NLI)
+python -m src.pipeline --no-claim-detection "The Eiffel Tower is located in Berlin."
 
 # evaluation: 500 SUPPORTS/REFUTES claims (claims_sample.jsonl) + 250 NEI claims from shared_task_dev
-python -m src.task3_verification.evaluate --limit 50          # quick test
-python -m src.task3_verification.evaluate                     # retrieved evidence (real pipeline)
-python -m src.task3_verification.evaluate --oracle-evidence   # gold evidence (upper bound for NLI)
+python -m src.evaluate --limit 50          # quick test
+python -m src.evaluate                     # retrieved evidence (real pipeline)
+python -m src.evaluate --oracle-evidence   # gold evidence (upper bound for NLI)
 ```
 
 Output in `outputs/task3/`: `metrics_{retrieved,oracle}.json` and `predictions_{retrieved,oracle}.jsonl`
@@ -79,7 +78,7 @@ pipe.check(raw_text)
 
 ## Results
 
-TODO: fill in after running `evaluate.py` (retrieved and oracle evidence).
+TODO: fill in after running `python -m src.evaluate` (retrieved and oracle evidence).
 
 ## Known limitations
 

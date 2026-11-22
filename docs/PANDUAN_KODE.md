@@ -49,7 +49,10 @@ Semua glue ada di [src/pipeline.py](../src/pipeline.py), class `FactCheckPipelin
 ```
 src/
 ├── paths.py                  ← lokasi folder bersama (data/, models/, outputs/)
+├── utils.py                  ← Device.auto() (cuda/mps/cpu) dan JsonlFile.read/write, dipakai semua task
 ├── pipeline.py               ← ENTRY POINT utama: Task 1 → 2 → 3
+├── evaluate.py               ← evaluasi end-to-end (retrieval + NLI): accuracy, macro F1, FEVER score, sweep threshold
+├── evaluate_retrieval.py     ← evaluasi Task 2 saja: recall / hit@1 / MRR sebelum vs sesudah rerank
 ├── run_test_cases.py         ← jalankan tests/test_cases.json lewat pipeline
 │
 ├── data_prep/                ← persiapan data (dijalankan sekali)
@@ -68,12 +71,10 @@ src/
 │   ├── bm25.py               ← implementasi BM25 pakai sparse matrix
 │   ├── retriever.py          ← Evidence dataclass + EvidenceRetriever (tahap [1] & [2])
 │   ├── reranker.py           ← CrossEncoderReranker (tahap [3])
-│   ├── pipeline.py           ← ★ EvidencePipeline (dipakai pipeline)
-│   └── evaluate.py           ← recall / hit@1 / MRR sebelum vs sesudah rerank
+│   └── pipeline.py           ← ★ EvidencePipeline (dipakai pipeline)
 │
 └── task3_verification/
-    ├── nli.py                ← ★ NLIVerifier + aggregate() (dipakai pipeline)
-    └── evaluate.py           ← accuracy, macro F1, FEVER score, sweep threshold
+    └── nli.py                ← ★ NLIVerifier, termasuk NLIVerifier.aggregate() (dipakai pipeline)
 
 tests/test_cases.json         ← test case manual (claim detection + verifikasi)
 notebooks/                    ← notebook Colab untuk training Task 1
@@ -117,14 +118,13 @@ python -m src.run_test_cases
 | `data/raw/claimbuster/*.csv` | `data_prep.download` | `build_task1_data` |
 | `data/processed/task1_*.parquet`, `task1_meta.json` | `build_task1_data` | `task1.train`, `task1.baseline` |
 | `models/task1_roberta-base_label/model/` | `task1.train` | `ClaimDetector` |
-| `data/raw/wiki-pages.zip`, `shared_task_dev.jsonl` | `task2.build_corpus` (via `task2/data.py`) | `build_corpus`, `task3.evaluate` |
+| `data/raw/wiki-pages.zip`, `shared_task_dev.jsonl` | `task2.build_corpus` (via `task2/data.py`) | `build_corpus`, `src.evaluate` |
 | `data/processed/wiki_subset.jsonl` | `task2.build_corpus` | `EvidencePipeline` |
-| `data/processed/claims_sample.jsonl` | `task2.build_corpus` | `task2.evaluate`, `task3.evaluate` |
+| `data/processed/claims_sample.jsonl` | `task2.build_corpus` | `src.evaluate_retrieval`, `src.evaluate` |
 
-> Catatan: ada **dua downloader**. `data_prep/download.py` (lebih aman, ada cek integritas,
-> mengunduh `paper_dev`/`train`/ClaimBuster) dan `download_fever_file` di
-> `task2_evidence_retrieval/data.py` (sederhana, dipakai `build_corpus` untuk `shared_task_dev.jsonl`).
-> Keduanya menyimpan ke `data/raw/`.
+> Catatan: semua download lewat satu class, `Downloader` di `data_prep/download.py` (dengan cek
+> integritas). `build_corpus` juga memakainya untuk `shared_task_dev.jsonl` dan `wiki-pages.zip`.
+> Semua file disimpan ke `data/raw/`.
 
 ---
 
@@ -177,12 +177,12 @@ Bentuk satu evidence:
 verifier = NLIVerifier()                     # DeBERTa-v3-base-mnli-fever-anli, threshold 0.5
 verifier.score(claim, evidence)              # → (sentence_probs (n,3), concat_probs (3,) atau None)
 verifier.verify(claim, evidence)             # → dict hasil lengkap (lihat bawah)
-aggregate(sentence_probs, concat_probs, t)   # → (label, scores), fungsi murni tanpa model
+NLIVerifier.aggregate(sentence_probs, concat_probs, t)   # → (label, scores), staticmethod: tidak butuh model
 ```
 
 - Kolom probabilitas selalu berurutan `(entailment, neutral, contradiction)` = `NLI_KEYS`.
   Urutan label setiap checkpoint berbeda, jadi `__init__` membacanya dari `config.id2label`.
-- `aggregate` dipisah dari model supaya `evaluate.py` bisa mencoba banyak threshold tanpa
+- `aggregate` adalah `staticmethod` (tidak memuat model) supaya `src/evaluate.py` bisa mencoba banyak threshold tanpa
   menjalankan ulang NLI.
 - `evidence` boleh berupa list dict (output Task 2) atau list string biasa.
 
@@ -240,9 +240,9 @@ Output per klaim:
 |---|---|---|
 | `python -m src.task1_claim_detection.baseline` | TF-IDF+LogReg di split Task 1 | `models/task1_tfidf-logreg/metrics.json` |
 | `python -m src.task1_claim_detection.domain_gap` | % klaim FEVER yang lolos Task 1 (≈94.5%) | `models/.../domain_gap_paper_dev.json` |
-| `python -m src.task2_evidence_retrieval.evaluate` | doc recall, evidence recall@5, hit@1, MRR | `outputs/task2/` |
-| `python -m src.task3_verification.evaluate` | accuracy, macro F1, FEVER score | `outputs/task3/metrics_retrieved.json` |
-| `python -m src.task3_verification.evaluate --oracle-evidence` | sama, tapi pakai gold evidence (batas atas NLI) | `outputs/task3/metrics_oracle.json` |
+| `python -m src.evaluate_retrieval` | doc recall, evidence recall@5, hit@1, MRR | `outputs/task2/` |
+| `python -m src.evaluate` | accuracy, macro F1, FEVER score | `outputs/task3/metrics_retrieved.json` |
+| `python -m src.evaluate --oracle-evidence` | sama, tapi pakai gold evidence (batas atas NLI) | `outputs/task3/metrics_oracle.json` |
 | `python -m src.run_test_cases` | test case manual di `tests/test_cases.json` | `outputs/test_cases/results.json` |
 
 Semua script punya `--limit N` atau opsi sejenis untuk tes cepat. Cek dengan `--help`.
@@ -274,7 +274,7 @@ Format `tests/test_cases.json`:
 - **Dua threshold berbeda.** Task 1: threshold P(claim) (0.60, dari `threshold.json`). Task 3:
   threshold NEI (0.5, `--threshold` di `pipeline.py`).
 - **Token PTB.** Teks Wikipedia FEVER memakai token seperti `-LRB-` untuk `(`.
-  `clean_text()` di `task2/data.py` mengubahnya kembali. Fungsi ini juga dipakai Task 3 sebelum
+  `FeverText.clean()` di `task2/data.py` mengubahnya kembali. Fungsi ini juga dipakai Task 3 sebelum
   memasukkan teks ke NLI.
 - **Lazy loading.** spaCy (Task 1) dan bi-encoder (Task 2) baru di-load saat pertama dipakai,
   jadi panggilan pertama lebih lambat.

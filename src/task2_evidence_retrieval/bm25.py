@@ -44,14 +44,15 @@ class BM25:
 
     def search(self, query, top_k=10):
         scores = self.get_scores(query)
-        return top_k_indices(scores, top_k)
+        return self.top_k(scores, top_k)
 
+    @staticmethod
+    def top_k(scores, k):
+        """[(index, score), ...] of the k highest scores, best first."""
+        k = min(k, len(scores))
+        if k == 0:
+            return []
 
-def top_k_indices(scores, k):
-    k = min(k, len(scores))
-    if k == 0:
-        return []
-
-    idx = np.argpartition(-scores, k - 1)[:k]
-    idx = idx[np.argsort(-scores[idx])]
-    return [(int(i), float(scores[i])) for i in idx]
+        idx = np.argpartition(-scores, k - 1)[:k]
+        idx = idx[np.argsort(-scores[idx])]
+        return [(int(i), float(scores[i])) for i in idx]

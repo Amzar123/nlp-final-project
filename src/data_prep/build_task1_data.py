@@ -18,42 +18,46 @@ import json
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from src.data_prep.download import CLAIMBUSTER_DIR
-from src.paths import PROCESSED_DIR, RAW_DIR
+from ..paths import PROCESSED_DIR
+from .download import CLAIMBUSTER_DIR
 
 LABEL_COLUMNS = ("label", "label_checkworthy")
 KEEP_COLUMNS = ["sentence_id", "text", "verdict", "label", "label_checkworthy", "speaker", "file_id"]
 
 
-def normalize(text):
-    return " ".join(str(text).lower().split())
+class ClaimBusterData:
+    """Read ClaimBuster CSVs and turn them into Task 1 labels."""
 
+    @staticmethod
+    def normalize(text):
+        return " ".join(str(text).lower().split())
 
-def load(path):
-    df = pd.read_csv(path)
-    df = df.rename(columns={"Sentence_id": "sentence_id", "Text": "text", "Verdict": "verdict",
-                            "Speaker": "speaker", "File_id": "file_id"})
-    df["text"] = df["text"].astype(str).str.strip()
-    df = df[df["text"] != ""].copy()
-    df["verdict"] = df["verdict"].astype(int)
-    df["label"] = (df["verdict"] >= 0).astype(int)
-    df["label_checkworthy"] = (df["verdict"] == 1).astype(int)
-    df["norm"] = df["text"].map(normalize)
-    return df
+    @classmethod
+    def load(cls, path):
+        df = pd.read_csv(path)
+        df = df.rename(columns={"Sentence_id": "sentence_id", "Text": "text", "Verdict": "verdict",
+                                "Speaker": "speaker", "File_id": "file_id"})
+        df["text"] = df["text"].astype(str).str.strip()
+        df = df[df["text"] != ""].copy()
+        df["verdict"] = df["verdict"].astype(int)
+        df["label"] = (df["verdict"] >= 0).astype(int)
+        df["label_checkworthy"] = (df["verdict"] == 1).astype(int)
+        df["norm"] = df["text"].map(cls.normalize)
+        return df
 
+    @staticmethod
+    def dedupe(df):
+        """Collapse duplicate texts. Drop the text entirely if its copies have different verdicts."""
+        verdicts_per_text = df.groupby("norm")["verdict"].nunique()
+        conflicting = set(verdicts_per_text[verdicts_per_text > 1].index)
+        kept = df[~df["norm"].isin(conflicting)].drop_duplicates("norm", keep="first")
+        return kept, len(conflicting), len(df) - len(kept)
 
-def dedupe(df):
-    """Collapse duplicate texts. Drop the text entirely if its copies have different verdicts."""
-    verdicts_per_text = df.groupby("norm")["verdict"].nunique()
-    conflicting = set(verdicts_per_text[verdicts_per_text > 1].index)
-    kept = df[~df["norm"].isin(conflicting)].drop_duplicates("norm", keep="first")
-    return kept, len(conflicting), len(df) - len(kept)
-
-
-def class_weights(labels):
-    """n / (n_classes * count_c), so the loss gives both classes equal total weight."""
-    counts = labels.value_counts().sort_index()
-    return [float(len(labels) / (len(counts) * counts[c])) for c in counts.index]
+    @staticmethod
+    def class_weights(labels):
+        """n / (n_classes * count_c), so the loss gives both classes equal total weight."""
+        counts = labels.value_counts().sort_index()
+        return [float(len(labels) / (len(counts) * counts[c])) for c in counts.index]
 
 
 def main():
@@ -63,15 +67,15 @@ def main():
     parser.add_argument("--out-dir", default=str(PROCESSED_DIR))
     args = parser.parse_args()
 
-    crowd = load(CLAIMBUSTER_DIR / "crowdsourced.csv")
-    test = load(CLAIMBUSTER_DIR / "groundtruth.csv")
+    crowd = ClaimBusterData.load(CLAIMBUSTER_DIR / "crowdsourced.csv")
+    test = ClaimBusterData.load(CLAIMBUSTER_DIR / "groundtruth.csv")
     stats = {"crowdsourced_raw": len(crowd), "groundtruth_raw": len(test)}
 
     in_test = crowd["norm"].isin(set(test["norm"]))
     stats["removed_overlap_with_test"] = int(in_test.sum())
     crowd = crowd[~in_test]
 
-    crowd, stats["conflicting_duplicate_texts"], stats["removed_duplicates"] = dedupe(crowd)
+    crowd, stats["conflicting_duplicate_texts"], stats["removed_duplicates"] = ClaimBusterData.dedupe(crowd)
 
     train, val = train_test_split(crowd, test_size=args.val_size, random_state=args.seed, stratify=crowd["verdict"])
 
@@ -87,7 +91,7 @@ def main():
         "val_size": args.val_size,
         "label_mapping": {"label": "CFS(1) + UFS(0) -> 1, NFS(-1) -> 0",
                           "label_checkworthy": "CFS(1) -> 1, UFS(0) + NFS(-1) -> 0"},
-        "class_weights": {col: class_weights(train[col]) for col in LABEL_COLUMNS},
+        "class_weights": {col: ClaimBusterData.class_weights(train[col]) for col in LABEL_COLUMNS},
         "stats": stats,
     }
 

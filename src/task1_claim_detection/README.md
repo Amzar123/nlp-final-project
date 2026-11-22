@@ -48,8 +48,8 @@ python -m src.task1_claim_detection.train --batch-size 32 --grad-accum 1
 python -m src.task1_claim_detection.train --batch-size 32 --grad-accum 1 --label-col label_checkworthy
 #    8 GB Apple M1 also works with the defaults (batch 16 x 2), but takes ~1.5-2 h per run.
 
-# 4. try it on raw text
-python -m src.task1_claim_detection.infer --all "Hello everyone! Barack Obama was born in Hawaii. I love pizza."
+# 4. try it on raw text (full pipeline: claim detection -> retrieval -> NLI)
+python -m src.pipeline "Hello everyone! Barack Obama was born in Hawaii. I love pizza."
 
 # 5. domain gap: how many real FEVER claims (paper_dev) pass the classifier
 python -m src.task1_claim_detection.domain_gap

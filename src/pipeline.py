@@ -7,20 +7,13 @@
     python -m src.pipeline "Hello everyone! The Eiffel Tower is located in Berlin. I love pizza."
     python -m src.pipeline --no-claim-detection "Nikolaj Coster-Waldau worked with the Fox Broadcasting Company."
     python -m src.pipeline --json "..."        # print the full JSON output
-
-In code:
-    from src.pipeline import FactCheckPipeline
-    pipe = FactCheckPipeline()
-    results = pipe.check(raw_text)
 """
 import argparse
 import json
 
 from .paths import PROCESSED_DIR
 from .task2_evidence_retrieval.pipeline import EvidencePipeline
-
 from .task3_verification.nli import DEFAULT_MODEL, NLIVerifier
-
 class FactCheckPipeline:
     def __init__(self, claim_detector=None, evidence_pipeline=None, verifier=None, top_k=5):
         self.claim_detector = claim_detector

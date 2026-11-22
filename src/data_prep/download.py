@@ -18,7 +18,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from src.paths import RAW_DIR
+from ..paths import RAW_DIR
 
 FEVER_MIRRORS = [
     "https://fever.ai/download/fever",
@@ -40,94 +40,98 @@ class DownloadError(RuntimeError):
     pass
 
 
-def looks_complete(path):
-    """Cheap truncation check that does not need the expected size."""
-    path = Path(path)
-    if not path.is_file() or path.stat().st_size == 0:
-        return False
-    if path.suffix == ".zip":
-        # A truncated zip has no end-of-central-directory record.
-        return zipfile.is_zipfile(path)
-    if path.suffix == ".jsonl":
-        return _last_line_is_json(path)
-    return True
+class Downloader:
+    """Streams each file to `<name>.part` and only renames it once the size and integrity checks pass."""
 
+    @staticmethod
+    def looks_complete(path):
+        """Cheap truncation check that does not need the expected size."""
+        path = Path(path)
+        if not path.is_file() or path.stat().st_size == 0:
+            return False
+        if path.suffix == ".zip":
+            # A truncated zip has no end-of-central-directory record.
+            return zipfile.is_zipfile(path)
+        if path.suffix == ".jsonl":
+            return Downloader._last_line_is_json(path)
+        return True
 
-def _last_line_is_json(path):
-    with open(path, "rb") as f:
-        f.seek(0, os.SEEK_END)
-        end = f.tell()
-        f.seek(max(0, end - CHUNK_SIZE))
-        tail = f.read().rstrip(b"\n")
-    last = tail.rsplit(b"\n", 1)[-1]
-    try:
-        json.loads(last)
-    except ValueError:
-        return False
-    return True
-
-
-def _stream_to_file(url, dest):
-    from tqdm import tqdm
-
-    part = dest.with_name(dest.name + ".part")
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=60) as response:
-        expected = response.headers.get("Content-Length")
-        expected = int(expected) if expected is not None else None
-        written = 0
-        with open(part, "wb") as out, tqdm(
-            total=expected, unit="B", unit_scale=True, desc=dest.name
-        ) as bar:
-            while True:
-                chunk = response.read(CHUNK_SIZE)
-                if not chunk:
-                    break
-                out.write(chunk)
-                written += len(chunk)
-                bar.update(len(chunk))
-
-    if written == 0:
-        part.unlink(missing_ok=True)
-        raise DownloadError("empty response body")
-    if expected is not None and written != expected:
-        raise DownloadError(f"got {written} bytes, expected {expected}. Partial file kept at {part}")
-    part.replace(dest)
-    if not looks_complete(dest):
-        raise DownloadError(f"{dest} was downloaded but fails the integrity check")
-    return dest
-
-
-def download_file(urls, dest, force=False):
-    """Try each URL in order. Raise DownloadError if all of them fail."""
-    dest = Path(dest)
-    dest.parent.mkdir(parents=True, exist_ok=True)
-
-    if dest.exists() and not force:
-        if looks_complete(dest):
-            return dest
-        print(f"{dest} looks truncated, downloading again")
-
-    errors = []
-    for url in urls:
-        print(f"Download {url} -> {dest}")
+    @staticmethod
+    def _last_line_is_json(path):
+        with open(path, "rb") as f:
+            f.seek(0, os.SEEK_END)
+            end = f.tell()
+            f.seek(max(0, end - CHUNK_SIZE))
+            tail = f.read().rstrip(b"\n")
+        last = tail.rsplit(b"\n", 1)[-1]
         try:
-            return _stream_to_file(url, dest)
-        except (urllib.error.URLError, http.client.HTTPException, OSError, DownloadError) as e:
-            errors.append(f"  {url}: {e}")
-            print(f"  failed: {e}")
+            json.loads(last)
+        except ValueError:
+            return False
+        return True
 
-    raise DownloadError(f"Could not download {dest.name}:\n" + "\n".join(errors))
+    @classmethod
+    def _stream_to_file(cls, url, dest):
+        from tqdm import tqdm
 
+        part = dest.with_name(dest.name + ".part")
+        request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(request, timeout=60) as response:
+            expected = response.headers.get("Content-Length")
+            expected = int(expected) if expected is not None else None
+            written = 0
+            with open(part, "wb") as out, tqdm(
+                total=expected, unit="B", unit_scale=True, desc=dest.name
+            ) as bar:
+                while True:
+                    chunk = response.read(CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    out.write(chunk)
+                    written += len(chunk)
+                    bar.update(len(chunk))
 
-def download_fever_file(filename, dest_dir=RAW_DIR, force=False):
-    urls = [f"{base}/{filename}" for base in FEVER_MIRRORS]
-    return download_file(urls, Path(dest_dir) / filename, force=force)
+        if written == 0:
+            part.unlink(missing_ok=True)
+            raise DownloadError("empty response body")
+        if expected is not None and written != expected:
+            raise DownloadError(f"got {written} bytes, expected {expected}. Partial file kept at {part}")
+        part.replace(dest)
+        if not cls.looks_complete(dest):
+            raise DownloadError(f"{dest} was downloaded but fails the integrity check")
+        return dest
 
+    @classmethod
+    def download(cls, urls, dest, force=False):
+        """Try each URL in order. Raise DownloadError if all of them fail."""
+        dest = Path(dest)
+        dest.parent.mkdir(parents=True, exist_ok=True)
 
-def download_claimbuster_file(filename, dest_dir=CLAIMBUSTER_DIR, force=False):
-    urls = [f"{CLAIMBUSTER_BASE}/{filename}?download=1"]
-    return download_file(urls, Path(dest_dir) / filename, force=force)
+        if dest.exists() and not force:
+            if cls.looks_complete(dest):
+                return dest
+            print(f"{dest} looks truncated, downloading again")
+
+        errors = []
+        for url in urls:
+            print(f"Download {url} -> {dest}")
+            try:
+                return cls._stream_to_file(url, dest)
+            except (urllib.error.URLError, http.client.HTTPException, OSError, DownloadError) as e:
+                errors.append(f"  {url}: {e}")
+                print(f"  failed: {e}")
+
+        raise DownloadError(f"Could not download {dest.name}:\n" + "\n".join(errors))
+
+    @classmethod
+    def fever(cls, filename, dest_dir=RAW_DIR, force=False):
+        urls = [f"{base}/{filename}" for base in FEVER_MIRRORS]
+        return cls.download(urls, Path(dest_dir) / filename, force=force)
+
+    @classmethod
+    def claimbuster(cls, filename, dest_dir=CLAIMBUSTER_DIR, force=False):
+        urls = [f"{CLAIMBUSTER_BASE}/{filename}?download=1"]
+        return cls.download(urls, Path(dest_dir) / filename, force=force)
 
 
 def main():
@@ -137,11 +141,11 @@ def main():
     parser.add_argument("--force", action="store_true", help="re-download even if the file looks complete")
     args = parser.parse_args()
 
-    jobs = [lambda f=f: download_fever_file(f, force=args.force) for f in FEVER_CLAIM_FILES]
+    jobs = [lambda f=f: Downloader.fever(f, force=args.force) for f in FEVER_CLAIM_FILES]
     if not args.no_wiki:
-        jobs.append(lambda: download_fever_file(FEVER_WIKI_FILE, force=args.force))
+        jobs.append(lambda: Downloader.fever(FEVER_WIKI_FILE, force=args.force))
     if not args.no_claimbuster:
-        jobs += [lambda f=f: download_claimbuster_file(f, force=args.force) for f in CLAIMBUSTER_FILES]
+        jobs += [lambda f=f: Downloader.claimbuster(f, force=args.force) for f in CLAIMBUSTER_FILES]
 
     try:
         for job in jobs:

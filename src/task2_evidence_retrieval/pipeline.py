@@ -1,8 +1,6 @@
-import argparse
-
 from .data import PROCESSED_DIR
 from .reranker import CrossEncoderReranker
-from .retriever import EvidenceRetriever, load_corpus
+from .retriever import EvidenceRetriever
 
 
 class EvidencePipeline:
@@ -14,7 +12,7 @@ class EvidencePipeline:
 
     @classmethod
     def from_corpus_file(cls, corpus_path=PROCESSED_DIR / "wiki_subset.jsonl", use_reranker=True, **kwargs):
-        retriever = EvidenceRetriever(load_corpus(corpus_path))
+        retriever = EvidenceRetriever.from_corpus_file(corpus_path)
         reranker = CrossEncoderReranker() if use_reranker else None
         return cls(retriever, reranker, **kwargs)
 
@@ -28,22 +26,3 @@ class EvidencePipeline:
 
     def run_batch(self, claims, top_k=5):
         return [{"claim": c, "evidence": self.run(c, top_k=top_k)} for c in claims]
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("claims", nargs="+")
-    parser.add_argument("--top-k", type=int, default=5)
-    parser.add_argument("--no-rerank", action="store_true")
-    args = parser.parse_args()
-
-    pipe = EvidencePipeline.from_corpus_file(use_reranker=not args.no_rerank)
-    for item in pipe.run_batch(args.claims, top_k=args.top_k):
-        print("\nClaim:", item["claim"])
-        for i, ev in enumerate(item["evidence"], 1):
-            score = ev["rerank_score"] if ev["rerank_score"] is not None else ev["retrieval_score"]
-            print(f"  {i}. [{ev['title']} #{ev['line_id']}] ({score:.3f}) {ev['text']}")
-
-
-if __name__ == "__main__":
-    main()
