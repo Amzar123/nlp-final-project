@@ -18,7 +18,6 @@ PTB_TOKENS = {
     "''": '"',
 }
 
-
 class FeverText:
     """FEVER stores text as PTB tokens (-LRB-, ``) and page ids with underscores."""
 
@@ -36,7 +35,6 @@ class FeverText:
     @classmethod
     def title_from_page_id(cls, page_id):
         return cls.clean(page_id.replace("_", " "))
-
 
 class FeverClaims:
     """Claim files: raw FEVER jsonl (load) and our own cache of sampled claims (save / read_cache)."""
@@ -83,8 +81,7 @@ class FeverClaims:
         for c in claims:
             c["evidence_sets"] = [[tuple(s) for s in ev] for ev in c["evidence_sets"]]
         return claims
-
-
+    
 class WikiDump:
     """FEVER wiki-pages.zip: many jsonl files, one page per line."""
 

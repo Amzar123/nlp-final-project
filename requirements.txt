@@ -8,3 +8,4 @@ accelerate
 pandas
 pyarrow
 spacy
+streamlit
