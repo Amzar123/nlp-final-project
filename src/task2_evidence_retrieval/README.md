@@ -151,4 +151,4 @@ dibanding full Wikipedia.
   claim classification berbahasa Indonesia, perlu diterjemahkan dulu atau ganti
   ke model multilingual (mis. `paraphrase-multilingual-MiniLM-L12-v2`).
 - Cross-encoder `ms-marco` dilatih untuk relevansi query-passage, bukan khusus
-  fact-checking. Fine-tuning di data train FEVER bisa jadi pengembangan selanjutnya.
+  claim check. Fine-tuning di data train FEVER bisa jadi pengembangan selanjutnya.

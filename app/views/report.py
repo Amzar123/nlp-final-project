@@ -215,12 +215,12 @@ def test_cases():
     with ui.card("tc_head"):
         ui.label("Hand-written test cases")
         ui.stats([(f"{sum(r['passed'] for r in cd)}/{len(cd)}", "factual-or-not checks passed"),
-                  (f"{sum(r['passed'] for r in ver)}/{len(ver)}", "fact-checks passed")])
+                  (f"{sum(r['passed'] for r in ver)}/{len(ver)}", "claim checks passed")])
         st.caption("From tests/test_cases.json. Good for catching regressions, too few to measure accuracy.")
 
     a, b = st.columns(2, gap="medium")
     with a, ui.card("tc_ver"):
-        ui.label("Fact-checks")
+        ui.label("Claim checks")
         rows = []
         for r in sorted(ver, key=lambda r: r["passed"]):
             side = (ui.verdict_pill(r["got"]) if r["passed"] else

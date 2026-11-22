@@ -1,4 +1,4 @@
-# Fact-Checking Pipeline
+# Claim Check Pipeline
 
 raw text -> **Task 1** claim detection ([src/task1_claim_detection](src/task1_claim_detection/README.md))
 -> **Task 2** evidence retrieval & reranking ([src/task2_evidence_retrieval](src/task2_evidence_retrieval/README.md))

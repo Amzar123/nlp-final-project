@@ -1,4 +1,4 @@
-# Panduan Kode: Fact-Checking Pipeline
+# Panduan Kode: Claim Check Pipeline
 
 Dokumen ini menjelaskan **gambaran besar** project: alur data, peran setiap file, dan cara
 semuanya tersambung. Detail eksperimen dan hasil per task ada di README masing-masing:
@@ -40,7 +40,7 @@ teks mentah
 SUPPORTS / REFUTES / NOT ENOUGH INFO (+ confidence + evidence)
 ```
 
-Semua glue ada di [src/pipeline.py](../src/pipeline.py), class `FactCheckPipeline`.
+Semua glue ada di [src/pipeline.py](../src/pipeline.py), class `ClaimCheckPipeline`.
 
 ---
 
@@ -81,7 +81,7 @@ notebooks/                    ← notebook Colab untuk training Task 1
 data/  models/  outputs/      ← hasil generate, tidak masuk git
 ```
 
-Yang ditandai ★ adalah tiga class yang dirangkai oleh `FactCheckPipeline`. File lain berfungsi
+Yang ditandai ★ adalah tiga class yang dirangkai oleh `ClaimCheckPipeline`. File lain berfungsi
 untuk **menyiapkan** (data, training) atau **mengukur** (evaluate).
 
 ---
@@ -186,18 +186,18 @@ NLIVerifier.aggregate(sentence_probs, concat_probs, t)   # → (label, scores), 
   menjalankan ulang NLI.
 - `evidence` boleh berupa list dict (output Task 2) atau list string biasa.
 
-### 4.4 `FactCheckPipeline`: [pipeline.py](../src/pipeline.py)
+### 4.4 `ClaimCheckPipeline`: [pipeline.py](../src/pipeline.py)
 
 ```python
-from src.pipeline import FactCheckPipeline
+from src.pipeline import ClaimCheckPipeline
 
-pipe = FactCheckPipeline.load()                         # load ketiga model
-pipe = FactCheckPipeline.load(use_claim_detection=False) # tanpa Task 1: input dianggap satu klaim
+pipe = ClaimCheckPipeline.load()                         # load ketiga model
+pipe = ClaimCheckPipeline.load(use_claim_detection=False) # tanpa Task 1: input dianggap satu klaim
 results = pipe.check(raw_text)                          # Task 1 → (2 → 3) per klaim
 one = pipe.verify_claim("Some claim.")                  # Task 2 → 3 saja
 ```
 
-> Pakai `.load()`, jangan `FactCheckPipeline()` kosong. Constructor-nya hanya menerima
+> Pakai `.load()`, jangan `ClaimCheckPipeline()` kosong. Constructor-nya hanya menerima
 > komponen yang sudah jadi (berguna untuk mocking/test). Kalau kosong, `evidence_pipeline`
 > dan `verifier` bernilai `None` sehingga `check()` crash.
 
