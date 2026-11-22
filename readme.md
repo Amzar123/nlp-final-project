@@ -4,6 +4,9 @@ raw text -> **Task 1** claim detection ([src/task1_claim_detection](src/task1_cl
 -> **Task 2** evidence retrieval & reranking ([src/task2_evidence_retrieval](src/task2_evidence_retrieval/README.md))
 -> **Task 3** NLI verification ([src/task3_verification](src/task3_verification/README.md)).
 
+New to the code? Start with the overview in [docs/PANDUAN_KODE.md](docs/PANDUAN_KODE.md) (Bahasa Indonesia):
+data flow, what each file does, setup order and the main classes.
+
 ```bash
 python -m src.pipeline "Good evening everyone. The Eiffel Tower is located in Berlin."
 ```
