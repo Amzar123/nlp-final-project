@@ -70,8 +70,8 @@ python -m src.pipeline --json "..."
 ```
 
 ```python
-from src.pipeline import FactCheckPipeline
-pipe = FactCheckPipeline.load()      # needs models/task1_roberta-base_label/model unless use_claim_detection=False
+from src.pipeline import ClaimCheckPipeline
+pipe = ClaimCheckPipeline.load()      # needs models/task1_roberta-base_label/model unless use_claim_detection=False
 pipe.check(raw_text)
 # [{"claim", "check_worthy_confidence", "verdict", "verdict_confidence", "scores", "evidence": [...]}, ...]
 ```

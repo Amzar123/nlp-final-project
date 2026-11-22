@@ -40,7 +40,7 @@ with left, ui.card("hits"):
     q = st.text_input("Search a topic", placeholder="e.g. Japan, Mogadishu", label_visibility="collapsed",
                       icon=":material/search:")
     how = st.segmented_control("Match", ["Title", "Keywords"], default="Title", label_visibility="collapsed",
-                               help="Keywords uses the same search as step 1 of the fact-checker.")
+                               help="Keywords uses the same search as step 1 of the claim checker.")
     hits = []
     if q.strip():
         if how == "Keywords":

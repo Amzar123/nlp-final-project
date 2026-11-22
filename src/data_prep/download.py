@@ -33,7 +33,7 @@ CLAIMBUSTER_FILES = ["groundtruth.csv", "crowdsourced.csv"]
 CLAIMBUSTER_DIR = RAW_DIR / "claimbuster"
 
 CHUNK_SIZE = 1 << 20
-USER_AGENT = "fact-checking-pipeline/0.1"
+USER_AGENT = "claim-check-pipeline/0.1"
 
 
 class DownloadError(RuntimeError):

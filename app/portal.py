@@ -1,4 +1,4 @@
-"""Fact-check portal. Run from the project root:
+"""Claim check portal. Run from the project root:
 
     streamlit run app/portal.py
 """
@@ -10,7 +10,7 @@ import ui
 
 STATIC = Path(__file__).parent / "static"
 
-st.set_page_config(page_title="factlens", page_icon=str(STATIC / "icon.svg"), layout="wide",
+st.set_page_config(page_title="ClaimsCheck", page_icon=str(STATIC / "icon.svg"), layout="wide",
                    initial_sidebar_state="expanded")
 st.logo(str(STATIC / "logo.svg"), icon_image=str(STATIC / "icon.svg"), size="large")
 ui.inject_css()

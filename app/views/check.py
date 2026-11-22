@@ -18,7 +18,7 @@ def use_example():
         st.session_state["text"] = EXAMPLES[choice]
 
 
-ui.page_header("Fact-check", "Is it true? Let's check.",
+ui.page_header("Claim check", "Is it true? Let's check.",
                "Paste a speech, a paragraph or one sentence. We find the statements worth checking, look them up "
                "in Wikipedia, and show you what the sources say.")
 

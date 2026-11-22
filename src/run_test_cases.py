@@ -96,8 +96,8 @@ def main():
 
     if "verification" in sections:
         # imported here so --only claim_detection works without the corpus or the NLI model
-        from .pipeline import FactCheckPipeline
-        runner.pipe = FactCheckPipeline.load(corpus_path=args.corpus, use_claim_detection=False, top_k=args.top_k)
+        from .pipeline import ClaimCheckPipeline
+        runner.pipe = ClaimCheckPipeline.load(corpus_path=args.corpus, use_claim_detection=False, top_k=args.top_k)
         output["verification"] = runner.run_verification(cases["verification"])
         runner.print_verification(output["verification"])
 

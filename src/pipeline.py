@@ -1,4 +1,4 @@
-"""End-to-end fact-checking pipeline: raw text -> claims -> evidence -> verdict.
+"""End-to-end claim check pipeline: raw text -> claims -> evidence -> verdict.
 
     Task 1  ClaimDetector    (src/task1_claim_detection)  keep sentences that are factual claims
     Task 2  EvidencePipeline (src/task2_evidence_retrieval) BM25 -> bi-encoder -> cross-encoder, top-k sentences
@@ -14,7 +14,7 @@ import json
 from .paths import PROCESSED_DIR
 from .task2_evidence_retrieval.pipeline import EvidencePipeline
 from .task3_verification.nli import DEFAULT_MODEL, NLIVerifier
-class FactCheckPipeline:
+class ClaimCheckPipeline:
     def __init__(self, claim_detector=None, evidence_pipeline=None, verifier=None, top_k=5):
         self.claim_detector = claim_detector
         self.evidence_pipeline = evidence_pipeline
@@ -56,6 +56,10 @@ class FactCheckPipeline:
             claims = self.claim_detector.detect(text)
         return [self.verify_claim(c["sentence"], c["p_claim"]) for c in claims]
 
+# Old name, kept so existing code and branches that import it keep working.
+FactCheckPipeline = ClaimCheckPipeline
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("text")
@@ -68,7 +72,7 @@ def main():
     parser.add_argument("--json", action="store_true", help="print the full JSON output")
     args = parser.parse_args()
 
-    pipe = FactCheckPipeline.load(
+    pipe = ClaimCheckPipeline.load(
         corpus_path=args.corpus, 
         claim_model_dir=args.claim_model_dir, 
         nli_model=args.nli_model,
