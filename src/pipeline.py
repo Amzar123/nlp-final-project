@@ -56,7 +56,6 @@ class FactCheckPipeline:
 
     def check(self, text):
         """Run every claim found in `text` through retrieval + NLI.
-
         Without a claim detector the whole text is treated as one claim.
         """
         if self.claim_detector is None:
@@ -64,7 +63,6 @@ class FactCheckPipeline:
         else:
             claims = self.claim_detector.detect(text)
         return [self.verify_claim(c["sentence"], c["p_claim"]) for c in claims]
-
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -97,7 +95,6 @@ def main():
             nli = ev["nli"]
             print(f"  {i}. [{ev['title']} #{ev['line_id']}] E={nli['entailment']:.2f} "
                   f"C={nli['contradiction']:.2f}  {ev['text']}")
-
-
+            
 if __name__ == "__main__":
     main()
