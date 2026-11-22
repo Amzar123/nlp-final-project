@@ -22,8 +22,7 @@ class FactCheckPipeline:
         self.top_k = top_k
 
     @classmethod
-    def load(cls, corpus_path=PROCESSED_DIR / "wiki_subset.jsonl", claim_model_dir=None,
-             nli_model=DEFAULT_MODEL, nli_threshold=0.5, use_claim_detection=True, top_k=5):
+    def load(cls, corpus_path=PROCESSED_DIR / "wiki_subset.jsonl", claim_model_dir=None, nli_model=DEFAULT_MODEL, nli_threshold=0.5, use_claim_detection=True, top_k=5):
         detector = None
         if use_claim_detection:
             from .task1_claim_detection.infer import DEFAULT_MODEL_DIR, ClaimDetector
@@ -64,14 +63,18 @@ def main():
     parser.add_argument("--claim-model-dir", default=None)
     parser.add_argument("--no-claim-detection", action="store_true", help="treat the input as a single claim")
     parser.add_argument("--nli-model", default=DEFAULT_MODEL)
-    parser.add_argument("--threshold", type=float, default=0.5, help="NLI threshold below which the verdict is NEI")
+    parser.add_argument("--threshold", type=float, default=0.7, help="NLI threshold below which the verdict is NEI")
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--json", action="store_true", help="print the full JSON output")
     args = parser.parse_args()
 
     pipe = FactCheckPipeline.load(
-        corpus_path=args.corpus, claim_model_dir=args.claim_model_dir, nli_model=args.nli_model,
-        nli_threshold=args.threshold, use_claim_detection=not args.no_claim_detection, top_k=args.top_k,
+        corpus_path=args.corpus, 
+        claim_model_dir=args.claim_model_dir, 
+        nli_model=args.nli_model,
+        nli_threshold=args.threshold, 
+        use_claim_detection=not args.no_claim_detection, 
+        top_k=args.top_k,
     )
     results = pipe.check(args.text)
 
@@ -79,7 +82,7 @@ def main():
         print(json.dumps(results, indent=2, ensure_ascii=False))
         return
     if not results:
-        print("No factual claims found.")
+        print("No claims found.")
     for r in results:
         cw = r["check_worthy_confidence"]
         print(f"\nClaim: {r['claim']}" + (f"  (p_claim={cw:.3f})" if cw is not None else ""))

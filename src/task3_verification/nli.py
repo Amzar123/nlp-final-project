@@ -2,17 +2,15 @@ import numpy as np
 
 from ..task2_evidence_retrieval.data import FeverText
 from ..utils import Device
+import torch
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 DEFAULT_MODEL = "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli"
 LABELS = ("SUPPORTS", "REFUTES", "NOT ENOUGH INFO")
 NLI_KEYS = ("entailment", "neutral", "contradiction")
 
-
 class NLIVerifier:
-    def __init__(self, model_name=DEFAULT_MODEL, threshold=0.5, use_concat=True, device=None,
-                 batch_size=16, max_length=512):
-        import torch
-        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+    def __init__(self, model_name=DEFAULT_MODEL, threshold=0.5, use_concat=True, device=None, batch_size=16, max_length=512):
 
         self._torch = torch
         self.model_name = model_name
