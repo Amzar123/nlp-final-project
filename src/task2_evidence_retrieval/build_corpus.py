@@ -12,7 +12,6 @@ from .data import PROCESSED_DIR, RAW_DIR, FeverClaims, FeverText, WikiDump
 
 TOTAL_WIKI_PAGES = 5_416_537
 
-
 class SubsetCorpusBuilder:
     """Wikipedia subset for a set of claims: gold pages + hard negatives (title matches a claim n-gram) + random pages."""
 
@@ -83,7 +82,6 @@ class SubsetCorpusBuilder:
     @staticmethod
     def save(corpus, path):
         JsonlFile.write(corpus, path)
-
 
 def main():
     parser = argparse.ArgumentParser()

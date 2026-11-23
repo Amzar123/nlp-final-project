@@ -26,7 +26,6 @@ from .utils import JsonlFile
 
 THRESHOLDS = [round(t, 2) for t in np.arange(0.30, 0.96, 0.05)]
 
-
 class VerificationEvaluator:
     def __init__(self, pipe, verifier, top_k=5, oracle_evidence=False):
         self.pipe = pipe

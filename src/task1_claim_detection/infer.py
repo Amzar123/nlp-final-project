@@ -10,7 +10,6 @@ from ..utils import Device
 DEFAULT_MODEL_DIR = MODELS_DIR / "task1_roberta-base_label" / "model"
 SPACY_EXCLUDE = ["ner", "lemmatizer", "attribute_ruler", "tagger"]
 
-
 class ClaimDetector:
     def __init__(self, model_dir=DEFAULT_MODEL_DIR, threshold=None, device=None, batch_size=64, max_length=128, spacy_model="en_core_web_sm"):
         model_dir = Path(model_dir)

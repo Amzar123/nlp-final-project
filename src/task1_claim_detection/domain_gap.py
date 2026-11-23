@@ -1,15 +1,3 @@
-"""Domain gap check (plan step 1.5).
-
-    python -m src.task1_claim_detection.domain_gap
-
-Runs the trained claim detector on every claim of FEVER paper_dev.jsonl and reports the pass
-rate: the share of real FEVER claims predicted as claim (1). Every FEVER claim is a factual
-statement, so 1 - pass_rate is the share of claims Task 1 would drop before Task 2 ever sees
-them, an upper bound on end-to-end recall.
-
-Each claim is scored as one sentence (as the pipeline would after splitting). The script also
-reports how often spaCy would split a FEVER claim into more than one sentence.
-"""
 import argparse
 import json
 from collections import Counter
@@ -19,8 +7,6 @@ import numpy as np
 
 from ..paths import RAW_DIR
 from .infer import DEFAULT_MODEL_DIR, ClaimDetector
-
-
 
 class DomainGapAnalyzer:
     """Pass rate of real FEVER claims through the claim detector."""
@@ -56,7 +42,6 @@ class DomainGapAnalyzer:
                                      for i in order[:n_lowest]],
         }
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--model-dir", default=str(DEFAULT_MODEL_DIR))
@@ -82,7 +67,6 @@ def main():
     for item in report["lowest_scored_claims"][:8]:
         print(f"    {item['p_claim']:.3f}  {item['claim']}")
     print(f"Saved {out_path}")
-
 
 if __name__ == "__main__":
     main()

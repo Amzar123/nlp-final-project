@@ -1,11 +1,3 @@
-"""Non-neural baseline for Task 1: TF-IDF + logistic regression.
-
-    python -m src.task1_claim_detection.baseline
-
-Same splits, label mappings, metrics and threshold tuning as train.py, so the numbers can be
-put in the same table as the transformer. Runs in about a minute on a laptop CPU.
-Output: models/task1_tfidf-logreg/metrics.json
-"""
 import argparse
 import json
 
@@ -17,7 +9,6 @@ from ..paths import MODELS_DIR
 from .train import ClaimMetrics, Task1Splits
 
 LABEL_COLUMNS = ("label", "label_checkworthy")
-
 
 class TfidfBaseline:
     def __init__(self, seed=42, c_values=(0.25, 1.0, 4.0, 16.0, 64.0)):
@@ -56,7 +47,6 @@ class TfidfBaseline:
             "test@tuned": ClaimMetrics.binary(y_test, test_probs, threshold),
         }
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--seed", type=int, default=42)
@@ -75,7 +65,6 @@ def main():
             print(f"{col:<20}{key:<12}{m['macro_f1']:>9.4f}{m['precision']:>8.4f}{m['recall']:>8.4f}{m['roc_auc']:>8.4f}")
         print(f"{'':<20}C={res['C']}, tuned threshold={res['tuned_threshold']:.2f}")
     print(f"Saved {out_dir / 'metrics.json'}")
-
 
 if __name__ == "__main__":
     main()

@@ -11,18 +11,16 @@ EXAMPLES = {
     "A TV fact": "Shadowhunters premiered in 2016.",
 }
 
-
 def use_example():
     choice = st.session_state.get("example")
     if choice:
         st.session_state["text"] = EXAMPLES[choice]
 
-
 ui.page_header("Claim check", "Is it true? Let's check.",
                "Paste a speech, a paragraph or one sentence. We find the statements worth checking, look them up "
                "in Wikipedia, and show you what the sources say.")
 
-# ================================================================ input + how it works
+# input + how it works
 left, right = st.columns([2, 1], gap="medium")
 with left, ui.card("input"):
     ui.label("Your text")
@@ -43,7 +41,7 @@ with left, ui.card("input"):
 with right, ui.card("brand_how"):
     ui.how_it_works()
 
-# ================================================================ run
+# run
 if go:
     slot = st.empty()
     with slot.status("Reading your text…") as status:
@@ -74,7 +72,7 @@ if not res:
     st.stop()
 sentences, results = res["sentences"], res["results"]
 
-# ================================================================ results
+# results
 st.header("Results", anchor=False)
 counts = {lab: sum(r["label"] == lab for r in results) for lab in ui.VERDICT}
 
