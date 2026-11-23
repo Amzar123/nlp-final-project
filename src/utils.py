@@ -2,7 +2,6 @@
 import json
 from pathlib import Path
 
-
 class Device:
     @staticmethod
     def auto():
@@ -13,7 +12,6 @@ class Device:
         if torch.backends.mps.is_available():
             return "mps"
         return "cpu"
-
 
 class JsonlFile:
     @staticmethod

@@ -1,7 +1,5 @@
 import random
-
 import streamlit as st
-
 import ui
 from common import CLAIMS_PATH, corpus_index, load_claims, load_verifier, rel, run_evidence, sentence_text
 from src.task2_evidence_retrieval.data import FeverText
@@ -22,17 +20,14 @@ ids = list(by_id)
 if st.session_state.get("claim_id") not in by_id:
     st.session_state["claim_id"] = ids[0]
 
-
 def shuffle():
     st.session_state["claim_id"] = random.choice(ids)
-
 
 def page_title(pid):
     page = corpus_index().get(pid)
     return page["title"] if page else FeverText.title_from_page_id(pid)
 
-
-# ================================================================ pick + the claim
+# pick + the claim
 pick, show = st.columns([1, 1.7], gap="medium")
 with pick, ui.card("pick"):
     ui.label("Choose a claim")
@@ -61,15 +56,13 @@ with show, ui.card("claim"):
     ui.html_block("".join(items))
 
 
-# ================================================================ run
+# run
 def full_set_in(keys):
     keys = set(keys)
     return any(all(tuple(s) in keys for s in ev) for ev in gold_sets)
 
-
 def gold_rank(evidence):
     return next((i for i, ev in enumerate(evidence, 1) if (ev["page_id"], ev["line_id"]) in gold_keys), None)
-
 
 if run:
     with st.spinner("Running all four steps…"):
@@ -90,7 +83,7 @@ in_final = full_set_in([(ev["page_id"], ev["line_id"]) for ev in kept])
 right = verdict["label"] == claim["label"]
 n_sent = sum(len(corpus_index()[p]["sentences"]) for p in doc_ids if p in corpus_index())
 
-# ---------------- outcome banner
+# outcome banner
 said = ui.VERDICT[verdict["label"]]
 if right:
     headline, why, tone = "Got it right", "Correct verdict, based on the right evidence." if in_final else \
@@ -108,7 +101,7 @@ with ui.card("outcome"):
                   f"<div class='muted small'>The system said {ui.verdict_pill(verdict['label'])} "
                   f"({ui.sureness(verdict['confidence']).lower()}). {why}</div></div></div>")
 
-# ---------------- four step cards
+# four step cards
 steps = [
     ("Keyword search", f"Find the {len(doc_ids)} pages that share the most words with the claim.",
      page_ok, "Found the page" if page_ok else "Missed the page",
@@ -134,7 +127,7 @@ for n, (col, (title, body, ok, status, metric, frac)) in enumerate(zip(cols, ste
                       f"<div class='step-title'>{title}</div><div class='step-body'>{body}</div>"
                       f"<div class='step-metric'>{metric}</div><div style='margin-top:10px'>{ui.bar(frac, tone)}</div>")
 
-# ---------------- details
+# details
 with ui.card("details"):
     ui.label("What each step saw")
     t1, t2, t3, t4 = st.tabs(["1 · Pages", "2 · Shortlist", "3 · Top 5 after re-read", "4 · Evidence used"])

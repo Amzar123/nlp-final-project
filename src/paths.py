@@ -1,4 +1,3 @@
-"""Project-wide filesystem locations. Import these instead of re-deriving paths per module."""
 from pathlib import Path
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent

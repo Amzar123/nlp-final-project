@@ -21,7 +21,6 @@ class Evidence:
     def to_dict(self):
         return asdict(self)
 
-
 class EvidenceRetriever:
     def __init__(
         self,

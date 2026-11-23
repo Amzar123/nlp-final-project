@@ -1,22 +1,3 @@
-"""Run a batch of test cases from a JSON file through the pipeline, loading the models only once.
-
-    python -m src.run_test_cases                                  # tests/test_cases.json
-    python -m src.run_test_cases my_cases.json
-    python -m src.run_test_cases --only claim_detection           # Task 1 only (no corpus needed)
-    python -m src.run_test_cases --only verification
-
-JSON format:
-
-    {
-      "claim_detection": [{"text": "Good evening everyone.", "expected": "not_claim", "category": "greeting"}, ...],
-      "verification":    [{"claim": "Mogadishu is a book.", "expected": "REFUTES", "note": "optional"}, ...]
-    }
-
-claim_detection runs Task 1 on one sentence; expected is "claim" or "not_claim".
-verification runs Task 1 + 2 + 3 on one claim; expected is SUPPORTS / REFUTES / NOT ENOUGH INFO.
-
-Results (every case with scores and evidence) are saved to outputs/test_cases/results.json.
-"""
 import argparse
 import json
 from pathlib import Path
@@ -74,7 +55,6 @@ class TestCaseRunner:
         passed = sum(r["passed"] for r in results)
         return f"{name}: {passed}/{len(results)} passed"
 
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("cases", nargs="?", default=str(PROJECT_DIR / "tests" / "test_cases.json"))
@@ -109,7 +89,6 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(output, indent=2, ensure_ascii=False, default=float))
     print(f"Saved to {out}")
-
 
 if __name__ == "__main__":
     main()

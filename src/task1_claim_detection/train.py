@@ -1,26 +1,3 @@
-"""Train the Task 1 claim detector (plan steps 1.2, 1.3, threshold part of 1.4).
-
-    # main run: factual (CFS + UFS) vs non-factual
-    python -m src.task1_claim_detection.train
-
-    # comparison run with the original check-worthiness mapping (CFS only = 1)
-    python -m src.task1_claim_detection.train --label-col label_checkworthy
-
-    # on a CUDA GPU (Colab): full batch, fp16 is switched on automatically
-    python -m src.task1_claim_detection.train --batch-size 32 --grad-accum 1
-
-    # quick pipeline test
-    python -m src.task1_claim_detection.train --model hf-internal-testing/tiny-random-RobertaForSequenceClassification --limit 400 --max-steps 20
-
-Weighted cross-entropy (class weights from task1_meta.json). The best step is chosen by
-validation macro F1 and written straight to model/ (one copy only, no Trainer checkpoints).
-Defaults (batch 16 x grad-accum 2) fit roberta-base on an 8 GB Apple M1.
-After training, the decision threshold on P(claim) is tuned on validation, and the test set
-(groundtruth.csv) is scored once at threshold 0.5 and once at the tuned threshold.
-
-Output in models/task1_<model>_<label-col>/: model/ (weights + tokenizer + threshold.json),
-metrics.json, test_predictions.csv
-"""
 import argparse
 import json
 from pathlib import Path
@@ -42,8 +19,6 @@ from transformers import (
 
 from ..paths import MODELS_DIR, PROCESSED_DIR
 ID2LABEL = {0: "non_factual", 1: "claim"}
-
-
 class SentenceDataset(torch.utils.data.Dataset):
     def __init__(self, texts, labels, tokenizer, max_length):
         self.encodings = tokenizer(list(texts), truncation=True, max_length=max_length)
@@ -56,8 +31,6 @@ class SentenceDataset(torch.utils.data.Dataset):
         item = {k: v[i] for k, v in self.encodings.items()}
         item["labels"] = int(self.labels[i])
         return item
-
-
 class WeightedTrainer(Trainer):
     def __init__(self, *args, class_weights=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -71,15 +44,7 @@ class WeightedTrainer(Trainer):
 
     def predict_probs(self, dataset):
         return ClaimMetrics.softmax_pos(self.predict(dataset).predictions)
-
-
 class SaveBestModel(TrainerCallback):
-    """Overwrite <save_dir> with the model whenever the validation metric improves.
-
-    Only one copy is ever on disk, and nothing extra is held in (unified) memory, which matters
-    on 8 GB Apple Silicon machines.
-    """
-
     def __init__(self, save_dir, metric="eval_macro_f1"):
         self.save_dir = Path(save_dir)
         self.metric = metric
@@ -92,7 +57,6 @@ class SaveBestModel(TrainerCallback):
             self.best_score = score
             self.best_step = state.global_step
             model.save_pretrained(self.save_dir)
-
 
 class ClaimMetrics:
     """Binary metrics on P(claim), shared by train.py and baseline.py."""
@@ -127,7 +91,6 @@ class ClaimMetrics:
         scores = [f1_score(labels, (probs >= t).astype(int), average="macro") for t in grid]
         return float(grid[int(np.argmax(scores))])
 
-
 class Task1Splits:
     @staticmethod
     def load(name, label_col, limit, seed):
@@ -135,7 +98,6 @@ class Task1Splits:
         if limit and limit < len(df):
             df = df.sample(n=limit, random_state=seed)
         return df.reset_index(drop=True), df[label_col].to_numpy()
-
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -257,7 +219,6 @@ def main():
         m = results[key]
         print(f"{key:<12}{m['macro_f1']:>9.4f}{m['precision']:>8.4f}{m['recall']:>8.4f}{m['roc_auc']:>8.4f}")
     print(f"Saved to {out_dir}")
-
 
 if __name__ == "__main__":
     main()

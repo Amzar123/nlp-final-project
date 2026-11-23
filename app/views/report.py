@@ -14,9 +14,7 @@ ui.page_header("Accuracy", "How well does it work?",
                "The honest numbers for each step, in plain words. Anything not measured yet shows the "
                "command to run.")
 
-section = st.segmented_control("Section", ["Spotting statements", "Evidence & verdicts", "Test cases", "Setup"],
-                               default="Spotting statements", label_visibility="collapsed")
-
+section = st.segmented_control("Section", ["Spotting statements", "Evidence & verdicts", "Test cases", "Setup"], default="Spotting statements", label_visibility="collapsed")
 
 def line_chart(df, x, y, series, x_title, y_format="%", rule_at=None, height=250):
     """Two-series line chart: 2px lines, legend above, nearest-point hover tooltip."""
@@ -54,7 +52,7 @@ def quote_rows(texts_scores):
     ui.html_block(f"<div class='rowlist'>{rows}</div>")
 
 
-# =================================================================== step 1
+# step 1
 def spotting():
     m = read_json(TASK1_DIR / "metrics.json")
     if m is None:
@@ -150,7 +148,7 @@ def spotting():
                 ui.html_block(f"<div class='rowlist'>{rows}</div>")
 
 
-# =================================================================== steps 2 + 3
+# steps 2 + 3
 def evidence_and_verdicts():
     m2 = read_json(TASK2_METRICS_PATH)
     with ui.card("t2"):
@@ -202,8 +200,7 @@ def evidence_and_verdicts():
         line_chart(long, "threshold", "value", "measure", "sureness needed to say true/false",
                    rule_at=m3["tuned_threshold"], height=220)
 
-
-# =================================================================== test cases
+# test cases
 def test_cases():
     res = read_json(TEST_RESULTS_PATH)
     if res is None:
@@ -243,8 +240,7 @@ def test_cases():
                         f"<div class='side'>{ui.pill(want, 'gray', dot=False)}</div></div>")
         ui.html_block(f"<div class='rowlist'>{''.join(rows)}</div>")
 
-
-# =================================================================== setup
+# setup
 def setup():
     with ui.card("setup"):
         top_l, top_r = st.columns([3, 1], vertical_alignment="center")

@@ -1,13 +1,8 @@
-"""The portal's design system: indigo brand, tinted canvas, white rounded cards, soft status pills.
-
-Theme colours and the font live in .streamlit/config.toml; keep the constants below in sync with it.
-Cards: any `st.container(key="card_<name>")` is a white card; `card_brand_<name>` is a filled gradient card.
-Cards placed side by side in st.columns stretch to the same height.
-"""
 import html
 import re
 
 import streamlit as st
+import pandas as pd
 
 INK, MUTED, FAINT = "#14142b", "#64677d", "#9a9cb0"
 CANVAS, CARD, LINE = "#f4f5fb", "#ffffff", "#e4e6f0"
@@ -168,42 +163,34 @@ div.st-key-hitlist {{ gap: .25rem !important; }}
 .side-card b {{ color: {INK}; }}
 """
 
-
 def inject_css():
     st.markdown(f"<style>{CSS}</style>", unsafe_allow_html=True)
-
 
 def html_block(markup):
     st.markdown(markup, unsafe_allow_html=True)
 
-
-# ---------------------------------------------------------------- building blocks
+# building blocks
 
 def card(name):
     return st.container(key=f"card_{name}")
 
-
 def icon(name, color=None, size=20):
     style = f"font-size:{size}px;" + (f"color:{color};" if color else "")
     return f"<span class='ico' style='{style}'>{name}</span>"
-
 
 def pill(text, tone="gray", dot=None):
     """Soft coloured label. `dot` is accepted for old call sites and ignored: pills have no dot."""
     fg, bg, _ = TONE[tone]
     return f"<span class='pill' style='color:{fg};background:{bg}'>{e(text)}</span>"
 
-
 def verdict_pill(label):
     v = VERDICT[label]
     return pill(v["word"], v["tone"])
-
 
 def bar(value, tone="brand", label=None, right=None):
     _, _, solid = TONE[tone]
     head = f"<div class='bar-row'><span>{label}</span><b>{right}</b></div>" if label else ""
     return f"{head}<div class='bar'><div style='width:{max(0, min(1, value)) * 100:.1f}%;background:{solid}'></div></div>"
-
 
 def stats(items):
     """items: [(number, label)] or [(number, label, tone)] in a row with thin dividers."""
@@ -214,22 +201,18 @@ def stats(items):
         cells += f"<div class='s'><div class='n' style='color:{color}'>{e(str(n))}</div><div class='l'>{e(l)}</div></div>"
     html_block(f"<div class='stats'>{cells}</div>")
 
-
 def stat_tile(number, text, ico, tone="brand"):
     fg, bg, _ = TONE[tone]
     return (f"<div class='stat-tile'><div class='badge' style='background:{bg};color:{fg}'>{icon(ico, size=22)}</div>"
             f"<div><div class='n'>{e(str(number))}</div><div class='l'>{e(text)}</div></div></div>")
 
-
 def label(text):
     html_block(f"<div class='label'>{e(text)}</div>")
-
 
 def page_header(eyebrow, title, lede_text):
     html_block(f"<span class='eyebrow'>{e(eyebrow)}</span>")
     st.title(title, anchor=False)
     html_block(f"<p class='lede'>{lede_text}</p>")
-
 
 def empty_state(title, body, command=None, ico="hourglass_empty"):
     html_block(f"<div class='empty'><div class='badge'>{icon(ico)}</div><div><div style='font-weight:600'>{e(title)}</div>"
@@ -237,16 +220,12 @@ def empty_state(title, body, command=None, ico="hourglass_empty"):
     if command:
         st.code(command, language="bash")
 
-
-# ---------------------------------------------------------------- language helpers
-
+# language helpers
 def pct(x, digits=0):
     return f"{x * 100:.{digits}f}%"
 
-
 def sureness(p):
     return "Very sure" if p >= 0.9 else "Fairly sure" if p >= 0.7 else "Not very sure"
-
 
 def tidy(text):
     """FEVER text is tokenized ("New Zealand 's , ( 1861 )"); make it read like normal prose."""
@@ -257,14 +236,11 @@ def tidy(text):
     t = re.sub(r'"\s+([^"]*?)\s+"', r'"\1"', t)
     return t.replace(" -- ", " – ")
 
-
 def title_of(title):
     from src.task2_evidence_retrieval.data import FeverText
     return FeverText.clean(title or "")
 
-
-# ---------------------------------------------------------------- composite pieces
-
+# composite pieces
 def evidence_item(ev, gold=False):
     nli = ev.get("nli")
     tone, rel = "gray", ""
@@ -277,11 +253,9 @@ def evidence_item(ev, gold=False):
             f"<div class='txt'>{e(tidy(ev.get('text', '')))}</div>"
             f"<div class='meta'>{rel}{star}<span>Wikipedia · {e(title_of(ev.get('title')))}</span></div></div></div>")
 
-
 def evidence_list(evidence, gold_keys=None):
     gold_keys = gold_keys or set()
     html_block("".join(evidence_item(ev, (ev.get("page_id"), ev.get("line_id")) in gold_keys) for ev in evidence))
-
 
 def decisive_order(label, evidence):
     if label == "SUPPORTS":
@@ -289,7 +263,6 @@ def decisive_order(label, evidence):
     if label == "REFUTES":
         return sorted(evidence, key=lambda ev: -ev["nli"]["contradiction"])
     return list(evidence)
-
 
 def annotated_text(sentences, threshold, verdict_by_index=None):
     verdict_by_index = verdict_by_index or {}
@@ -304,7 +277,6 @@ def annotated_text(sentences, threshold, verdict_by_index=None):
             parts.append(f"<span class='skip' title='{tip}'>{e(s['sentence'])}</span>")
     html_block(f"<div class='annot'>{' '.join(parts)}</div>")
 
-
 def how_it_works():
     steps = [("format_quote", "brand", "1 · Spot the claims", "Keeps factual sentences, skips small talk"),
              ("travel_explore", "violet", "2 · Find evidence", "Searches 31,000 Wikipedia pages"),
@@ -316,16 +288,12 @@ def how_it_works():
                f"<div class='sub'>Three models, one after another.</div>{rows}</div>")
     # render inside ui.card("brand_how") so it gets the gradient and matches its neighbour's height
 
-
 def summary_rows(counts):
     icons = {"SUPPORTS": ("check_circle", "#86efac"), "REFUTES": ("cancel", "#fca5a5"), "NOT ENOUGH INFO": ("help", "#fde68a")}
     return "".join(f"<div class='sum-row'><div class='w'>{icon(*icons[l])}{VERDICT[l]['word']}</div>"
                    f"<div class='n'>{n}</div></div>" for l, n in counts.items())
 
-
 def evidence_table(evidence, gold_keys=None):
-    """Developer view with every score."""
-    import pandas as pd
     rows = []
     for i, ev in enumerate(evidence, 1):
         nli = ev.get("nli") or {}
@@ -345,7 +313,6 @@ def evidence_table(evidence, gold_keys=None):
         "rerank": st.column_config.NumberColumn(format="%.2f"),
         "meaning": st.column_config.NumberColumn(format="%.2f"),
         "keyword": st.column_config.NumberColumn(format="%.1f")})
-
 
 def chart_theme(chart):
     return (chart.configure(background="transparent", font="Inter")

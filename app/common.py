@@ -1,8 +1,6 @@
-"""Data + model loading for the portal. Everything heavy is cached once per server process."""
 import json
 import sys
 from pathlib import Path
-
 import streamlit as st
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
@@ -23,28 +21,23 @@ TASK3_METRICS = {
     "oracle": OUTPUTS_DIR / "task3" / "metrics_oracle.json",
 }
 
-
 def rel(path):
     return str(Path(path).relative_to(PROJECT_DIR))
 
-
-# ---------------------------------------------------------------- data
+# data
 
 @st.cache_data(show_spinner=False)
 def read_json(path):
     path = Path(path)
     return json.loads(path.read_text()) if path.exists() else None
 
-
 @st.cache_resource(show_spinner="Opening the Wikipedia library…")
 def load_corpus():
     return JsonlFile.read(CORPUS_PATH)
 
-
 @st.cache_resource(show_spinner=False)
 def corpus_index():
     return {p["id"]: p for p in load_corpus()}
-
 
 def sentence_text(page_id, line_id):
     page = corpus_index().get(page_id)
@@ -52,37 +45,30 @@ def sentence_text(page_id, line_id):
         return None
     return next((t for lid, t in page["sentences"] if int(lid) == int(line_id)), None)
 
-
 @st.cache_data(show_spinner=False)
 def load_claims():
     return JsonlFile.read(CLAIMS_PATH) if CLAIMS_PATH.exists() else []
 
-
-# ---------------------------------------------------------------- models
-
+# models
 @st.cache_resource(show_spinner="Loading the statement spotter…")
 def load_detector():
     from src.task1_claim_detection.infer import ClaimDetector
     return ClaimDetector(TASK1_MODEL_DIR)
-
 
 @st.cache_resource(show_spinner="Indexing the library for search…")
 def load_retriever():
     from src.task2_evidence_retrieval.retriever import EvidenceRetriever
     return EvidenceRetriever(load_corpus())
 
-
 @st.cache_resource(show_spinner="Loading the re-ranker…")
 def load_reranker():
     from src.task2_evidence_retrieval.reranker import CrossEncoderReranker
     return CrossEncoderReranker()
 
-
 @st.cache_resource(show_spinner="Loading the reading model (downloads once)…")
 def load_verifier():
     from src.task3_verification.nli import NLIVerifier
     return NLIVerifier()
-
 
 def run_evidence(claim, top_k=5, doc_k=5, n_candidates=30, keep_stages=False):
     """Task 2 with every stage exposed (same logic as EvidencePipeline.run)."""

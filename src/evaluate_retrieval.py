@@ -11,7 +11,6 @@ from .task2_evidence_retrieval.reranker import CrossEncoderReranker
 from .task2_evidence_retrieval.retriever import EvidenceRetriever
 from .utils import JsonlFile
 
-
 class RetrievalMetrics:
     @staticmethod
     def full_set_found(evidence_sets, found_keys):
@@ -30,7 +29,6 @@ class RetrievalMetrics:
             if key in gold_keys:
                 return 1.0 / rank
         return 0.0
-
 
 class RetrievalEvaluator:
     """Document recall, sentence recall, hit@1 and MRR, before and after reranking."""
@@ -55,13 +53,13 @@ class RetrievalEvaluator:
             gold_sets = c["evidence_sets"]
             gold_keys = {tuple(s) for ev in gold_sets for s in ev}
 
-            # --- document retrieval ---
+            # document retrieval
             docs = self.retriever.retrieve_documents(c["claim"], k=max(self.doc_ks))
             doc_ids = [self.retriever.pages[i]["id"] for i, _ in docs]
             for k in self.doc_ks:
                 add(f"doc_recall@{k}", m.doc_set_found(gold_sets, doc_ids[:k]))
 
-            # --- sentence retrieval (bi-encoder) ---
+            # sentence retrieval (bi-encoder)
             candidates = self.retriever.retrieve(c["claim"], top_k=self.n_candidates, doc_k=self.doc_k)
             before = [x.key for x in candidates]
             add("candidate_recall", m.full_set_found(gold_sets, before))
@@ -69,7 +67,7 @@ class RetrievalEvaluator:
             add("before/hit@1", bool(before) and before[0] in gold_keys)
             add("before/mrr", m.reciprocal_rank(before, gold_keys))
 
-            # --- reranking (cross-encoder) ---
+            # reranking (cross-encoder)
             final = candidates[:self.top_k]
             if self.reranker is not None:
                 reranked = self.reranker.rerank(c["claim"], candidates, top_k=len(candidates))
@@ -105,7 +103,6 @@ class RetrievalEvaluator:
             after = metrics.get(f"after/{name}")
             after_str = f"{after:.4f}" if after is not None else "-"
             print(f"  {name:<20} {before:>15.4f} {after_str:>15}")
-
 
 def main():
     parser = argparse.ArgumentParser()
